@@ -41,31 +41,59 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <span className="hero-eyebrow">The Signature Collection</span>
-            <h1 className="hero-h1">Flawless Hair. Unmatched Quality.</h1>
+            <span className="hero-eyebrow">Luxury for Less</span>
+            <h1 className="hero-h1">PREMIUM HAIR EXTENSIONS</h1>
             <p className="hero-sub">
-              Experience the pinnacle of luxury with our 100% virgin hair bundles and precision-crafted lace wigs.
+              Discover our curated collection of 100% virgin human hair bundles, wigs, closures & frontals.
             </p>
             <div style={{ display: 'flex', gap: '1rem' }}>
               <a href="/products" className="hero-btn primary">
-                Shop the Collection
+                Shop Now
               </a>
               <a href="/products?cat=Wigs" className="hero-btn secondary">
-                View Wigs
+                Browse Wigs
               </a>
             </div>
           </motion.div>
         </div>
       </section>
 
+      {/* SHOP BY CATEGORY (Pill Buttons) */}
+      <section className="container" style={{ padding: '4rem 1rem 1rem' }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', textAlign: 'center', marginBottom: '2rem', fontSize: '2rem' }}>Shop by Category</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+          {['Bundles', 'Wigs', 'Closures', 'Frontals'].map(cat => (
+            <a 
+              key={cat} 
+              href={`/products?cat=${cat}`}
+              style={{
+                padding: '0.75rem 2rem',
+                borderRadius: '999px',
+                border: '1px solid var(--border)',
+                background: 'var(--card-bg)',
+                color: 'var(--foreground)',
+                textDecoration: 'none',
+                fontWeight: '500',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--foreground)'; e.currentTarget.style.color = 'var(--background)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--card-bg)'; e.currentTarget.style.color = 'var(--foreground)'; }}
+            >
+              {cat}
+            </a>
+          ))}
+        </div>
+      </section>
+
       {/* FEATURED PRODUCTS (now dynamic) */}
       {featured.length > 0 && (
-        <section className="featured-section container">
-          <div className="feat-header">
-            <h2>Trending Now</h2>
-            <a href="/products" className="view-all">View All <ArrowRight size={16} /></a>
+        <section className="featured-section container" style={{ paddingTop: '4rem' }}>
+          <div className="feat-header" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '3rem' }}>
+            <span style={{ fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold', color: 'var(--muted-fg)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>CURATED SELECTION</span>
+            <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>Featured Products</h2>
+            <a href="/products" className="view-all" style={{ textDecoration: 'none', color: 'var(--foreground)', borderBottom: '1px solid var(--foreground)', paddingBottom: '2px' }}>View All →</a>
           </div>
-          <div className="feat-grid">
+          <div className="feat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
             {featured.map((p, i) => (
               <motion.a
                 key={p.id}
@@ -75,20 +103,36 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
+                style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
               >
-                <div className="img-wrap">
-                  <img src={p.img} alt={p.name} loading="lazy" />
+                <div className="img-wrap" style={{ position: 'relative', height: '300px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1rem' }}>
+                  <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'white', color: 'black', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 2 }}>Best Seller</span>
+                  <img src={p.img} alt={p.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }} />
                 </div>
-                <div className="info">
-                  <h3>{p.name}</h3>
-                  <p>{p.length}</p>
-                  <div className="price">₦{Number(p.price).toLocaleString()}</div>
+                <div className="info" style={{ textAlign: 'center' }}>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', fontFamily: 'var(--font-display)' }}>{p.name}</h3>
+                  <div className="price" style={{ fontSize: '1rem', color: 'var(--muted-fg)', marginBottom: '0.5rem' }}>₦{Number(p.price).toLocaleString()}</div>
+
                 </div>
               </motion.a>
             ))}
           </div>
         </section>
       )}
+
+      {/* FLEXIBLE PAYMENTS SECTION */}
+      <section style={{ margin: '6rem 0', padding: '6rem 1rem', background: 'linear-gradient(135deg, hsl(340 100% 98%) 0%, hsl(260 100% 98%) 100%)', textAlign: 'center' }}>
+        <div className="container" style={{ maxWidth: '600px' }}>
+          <span style={{ fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '1rem', display: 'block' }}>FLEXIBLE PAYMENTS</span>
+          <h2 style={{ fontSize: '3rem', fontFamily: 'var(--font-display)', marginBottom: '1.5rem', lineHeight: 1.2 }}>Pay in Installments</h2>
+          <p style={{ color: 'var(--muted-fg)', fontSize: '1.1rem', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+            Get the hair you love now and pay over time. Choose from 2 to 6 month flexible payment plans with 0% interest on 2-month plans.
+          </p>
+          <a href="/products" className="hero-btn primary" style={{ display: 'inline-flex', background: 'var(--primary)', color: 'white', padding: '1rem 2.5rem', borderRadius: '999px', textDecoration: 'none', fontWeight: '600', fontSize: '1.1rem', transition: 'opacity 0.3s' }}>
+            Start Shopping
+          </a>
+        </div>
+      </section>
 
       {/* VALUE PROPS */}
       <section className="values-section">

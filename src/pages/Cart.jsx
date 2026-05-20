@@ -41,7 +41,7 @@ export default function Cart() {
     // Korapay Initialization
     if (window.Korapay) {
       window.Korapay.initialize({
-        key: "pk_test_YOUR_KEY_HERE", // Replace with real key
+        key: "pk_test_PRPabwReqFtVxH472nitLVfuUbFskvZQBxsmAaiA",
         reference: `JDGH_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
         amount: totalToPayNow,
         currency: "NGN",
