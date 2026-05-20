@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowLeft, ChevronDown } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Footer from '../components/Footer';
+import useCartStore from '../store/useCartStore';
 
 const INTEREST = { 2: 0, 3: 10, 4: 10, 5: 20, 6: 20 };
 
@@ -13,6 +14,8 @@ function fmt(n) {
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { addToCart } = useCartStore();
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,11 +69,20 @@ export default function ProductDetail() {
 
   // Installment calculations
   const price = Number(product.price);
-  const pss = Number(product.pss);
   const rate        = INTEREST[installments] / 100;
   const total       = price * (1 + rate);
   const monthly     = total / installments;
   const interestAmt = total - price;
+
+  const handleBuyOnce = () => {
+    addToCart(product, 1, 'full', 1, price);
+    navigate('/cart');
+  };
+
+  const handleInstallment = () => {
+    addToCart(product, 1, 'installment', installments, monthly);
+    navigate('/cart');
+  };
 
   return (
     <main>
@@ -163,7 +175,7 @@ export default function ProductDetail() {
                     </p>
                   </div>
 
-                  <button className="pd-installment-btn">
+                  <button className="pd-installment-btn" onClick={handleInstallment}>
                     Start Installment Plan — {fmt(monthly)}/mo
                   </button>
                 </div>
@@ -171,7 +183,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Buy once button */}
-            <button className="pd-buy-btn">
+            <button className="pd-buy-btn" onClick={handleBuyOnce}>
               <ShoppingBag size={18} />
               Buy Once — {fmt(price)}
             </button>

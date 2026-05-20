@@ -1,6 +1,6 @@
 import { Navigate, Outlet, Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
-import { Package, PlusCircle, LogOut, User } from 'lucide-react';
+import { Package, PlusCircle, LogOut, User, ClipboardList } from 'lucide-react';
 import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
 
@@ -19,6 +19,9 @@ export default function AdminLayout() {
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: 'var(--radius)', color: 'var(--foreground)', background: 'var(--muted)' }}>
             <Package size={18} /> Manage Products
+          </Link>
+          <Link to="/admin/orders" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: 'var(--radius)', color: 'var(--foreground)' }}>
+            <ClipboardList size={18} /> Customer Orders
           </Link>
           <Link to="/admin/new" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: 'var(--radius)', color: 'var(--foreground)' }}>
             <PlusCircle size={18} /> Add Product

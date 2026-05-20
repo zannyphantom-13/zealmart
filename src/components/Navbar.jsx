@@ -2,18 +2,22 @@ import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Search, ShoppingBag, Menu, X, User, LogOut, Shield } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
+import useCartStore from '../store/useCartStore';
 import './Navbar.css';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const { user, isAdmin, logout } = useAuthStore();
+  const { getTotalItems } = useCartStore();
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
     setMobileOpen(false);
   };
+
+  const totalItems = getTotalItems();
 
   return (
     <header className="site-header">
@@ -74,9 +78,29 @@ export default function Navbar() {
             </>
           )}
 
-          <button className="cart-btn" aria-label="Cart">
+          <Link to="/cart" className="cart-btn" aria-label="Cart" style={{ position: 'relative' }}>
             <ShoppingBag size={20} />
-          </button>
+            {totalItems > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: '0',
+                right: '0',
+                background: 'var(--primary)',
+                color: 'white',
+                fontSize: '0.65rem',
+                fontWeight: 'bold',
+                width: '18px',
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                transform: 'translate(25%, -25%)'
+              }}>
+                {totalItems}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 

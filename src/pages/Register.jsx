@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/
 import { auth, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import Footer from '../components/Footer';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -12,11 +13,13 @@ export default function Register() {
     lastName: '',
     phone: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -26,6 +29,12 @@ export default function Register() {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
@@ -48,7 +57,7 @@ export default function Register() {
       } else {
         setSuccessMessage('Account created successfully! A verification link has been sent to your email.');
         // Clear form
-        setFormData({ firstName: '', lastName: '', phone: '', email: '', password: '' });
+        setFormData({ firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '' });
       }
     } catch (err) {
       // Firebase throws specific errors, we can format them nicely
@@ -101,7 +110,18 @@ export default function Register() {
                 </div>
                 <div className="form-group">
                   <label>Password</label>
-                  <input type="password" name="password" value={formData.password} placeholder="Create a password" minLength="6" required onChange={handleChange} />
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} placeholder="Create a password" minLength="6" required onChange={handleChange} style={{ width: '100%', paddingRight: '40px' }} />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}>
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Confirm Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} placeholder="Confirm your password" minLength="6" required onChange={handleChange} style={{ width: '100%', paddingRight: '40px' }} />
+                  </div>
                 </div>
                 <button type="submit" className="auth-submit" disabled={loading}>
                   {loading ? 'Creating Account...' : 'Sign Up'}

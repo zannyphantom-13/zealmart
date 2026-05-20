@@ -1,0 +1,93 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+const useCartStore = create(
+  persist(
+    (set, get) => ({
+      items: [],
+      
+      addToCart: (product, quantity = 1, paymentChoice = 'full', installments = 1, monthlyPayment = 0) => {
+        set((state) => {
+          // Check if item exists with same payment choice
+          const existingItemIndex = state.items.findIndex(
+            (item) => item.id === product.id && item.paymentChoice === paymentChoice && item.installments === installments
+          );
+
+          if (existingItemIndex > -1) {
+            // Update quantity
+            const newItems = [...state.items];
+            newItems[existingItemIndex].quantity += quantity;
+            return { items: newItems };
+          }
+
+          // Add new item
+          return {
+            items: [
+              ...state.items,
+              {
+                ...product,
+                quantity,
+                paymentChoice,
+                installments,
+                monthlyPayment,
+                cartItemId: Math.random().toString(36).substr(2, 9)
+              }
+            ]
+          };
+        });
+      },
+
+      removeFromCart: (cartItemId) => {
+        set((state) => ({
+          items: state.items.filter((item) => item.cartItemId !== cartItemId)
+        }));
+      },
+
+      updateQuantity: (cartItemId, newQuantity) => {
+        if (newQuantity < 1) return;
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.cartItemId === cartItemId ? { ...item, quantity: newQuantity } : item
+          )
+        }));
+      },
+
+      clearCart: () => set({ items: [] }),
+
+      // Computed properties (getters)
+      getTotalItems: () => {
+        return get().items.reduce((total, item) => total + item.quantity, 0);
+      },
+
+      getCartTotal: () => {
+        return get().items.reduce((total, item) => {
+          if (item.paymentChoice === 'full') {
+            return total + (item.price * item.quantity);
+          } else {
+            // If they chose installment, we calculate the total amount they are committing to
+            const INTEREST = { 2: 0, 3: 10, 4: 10, 5: 20, 6: 20 };
+            const rate = INTEREST[item.installments] / 100;
+            const fullAmount = item.price * (1 + rate);
+            return total + (fullAmount * item.quantity);
+          }
+        }, 0);
+      },
+      
+      getInitialPaymentTotal: () => {
+        return get().items.reduce((total, item) => {
+          if (item.paymentChoice === 'full') {
+            return total + (item.price * item.quantity);
+          } else {
+            // First month payment
+            return total + (item.monthlyPayment * item.quantity);
+          }
+        }, 0);
+      }
+    }),
+    {
+      name: 'jd-good-hair-cart',
+    }
+  )
+);
+
+export default useCartStore;

@@ -1,6 +1,5 @@
-// Replace these with your actual Cloudinary details
-const CLOUD_NAME = "YOUR_CLOUD_NAME";
-const UPLOAD_PRESET = "YOUR_UPLOAD_PRESET"; // must be an "unsigned" preset
+const CLOUD_NAME = "djd5ygwf7";
+const UPLOAD_PRESET = "jd-good-hair";
 
 export const uploadImage = async (file) => {
   const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
@@ -16,7 +15,7 @@ export const uploadImage = async (file) => {
     });
     
     if (!response.ok) {
-      throw new Error("Failed to upload image");
+      throw new Error("Failed to upload image. Please check your Cloud Name and Preset.");
     }
 
     const data = await response.json();

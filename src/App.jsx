@@ -10,6 +10,8 @@ import Profile from './pages/Profile';
 import AdminLayout from './pages/Admin/AdminLayout';
 import ProductManager from './pages/Admin/ProductManager';
 import ProductForm from './pages/Admin/ProductForm';
+import Cart from './pages/Cart';
+import AdminOrders from './pages/Admin/AdminOrders';
 import useAuthStore from './store/useAuthStore';
 import './index.css';
 
@@ -37,12 +39,14 @@ function App() {
         <Route path="/login"          element={<Login />} />
         <Route path="/register"       element={<Register />} />
         <Route path="/profile"        element={<Profile />} />
+        <Route path="/cart"           element={<Cart />} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<ProductManager />} />
           <Route path="new" element={<ProductForm />} />
           <Route path="edit/:id" element={<ProductForm />} />
+          <Route path="orders" element={<AdminOrders />} />
         </Route>
       </Routes>
     </Router>
