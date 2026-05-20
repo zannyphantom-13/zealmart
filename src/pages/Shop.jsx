@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, useLocation, Link } from 'react-router-dom';
+import { useSearchParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Search } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -16,6 +16,7 @@ function pathToCategory(pathname) {
 export default function Shop() {
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const urlCat =
     searchParams.get('category') ||
@@ -119,22 +120,35 @@ export default function Shop() {
               </p>
             )}
             {filtered.map(p => (
-              <div key={p.id} className="product-card">
-                <Link to={`/products/${p.id}`} className="img-wrap">
+              <div 
+                key={p.id} 
+                className="product-card" 
+                onClick={() => navigate(`/products/${p.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                <Link to={`/products/${p.id}`} onClick={e => e.stopPropagation()} className="img-wrap">
                   <img src={p.img} alt={p.name} loading="lazy" />
                   {p.featured && <span className="feat-badge">Featured</span>}
                 </Link>
 
                 <div className="info">
-                  <Link to={`/products/${p.id}`}>
+                  <Link to={`/products/${p.id}`} onClick={e => e.stopPropagation()}>
                     <h3>{p.name}</h3>
                   </Link>
                   <p className="feat-length">{p.length}</p>
                   <div className="price">₦{Number(p.price).toLocaleString()}</div>
 
                   <div className="card-actions">
-                    <button className="pss-btn">Pay Small Small</button>
-                    <button className="buy-once-btn">
+                    <button 
+                      className="pss-btn" 
+                      onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
+                    >
+                      Pay Small Small
+                    </button>
+                    <button 
+                      className="buy-once-btn"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
+                    >
                       <ShoppingBag size={14} />
                       Buy Once
                     </button>

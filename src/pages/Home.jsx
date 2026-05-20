@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Star, ShieldCheck, Heart } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Star, ShieldCheck, Heart, ShoppingBag } from 'lucide-react';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import Footer from '../components/Footer';
 
 export default function Home() {
   const [featured, setFeatured] = useState([]);
+  const navigate = useNavigate();
   
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -95,26 +97,42 @@ export default function Home() {
           </div>
           <div className="feat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
             {featured.map((p, i) => (
-              <motion.a
+              <motion.div
                 key={p.id}
-                href={`/products/${p.id}`}
-                className="feat-card"
+                className="product-card"
+                onClick={() => navigate(`/products/${p.id}`)}
+                style={{ cursor: 'pointer' }}
                 initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ delay: i * 0.1, duration: 0.5 }}
-                style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
               >
-                <div className="img-wrap" style={{ position: 'relative', height: '300px', borderRadius: '12px', overflow: 'hidden', marginBottom: '1rem' }}>
-                  <span style={{ position: 'absolute', top: '10px', right: '10px', background: 'white', color: 'black', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 'bold', zIndex: 2 }}>Best Seller</span>
-                  <img src={p.img} alt={p.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }} />
-                </div>
-                <div className="info" style={{ textAlign: 'center' }}>
-                  <h3 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', fontFamily: 'var(--font-display)' }}>{p.name}</h3>
-                  <div className="price" style={{ fontSize: '1rem', color: 'var(--muted-fg)', marginBottom: '0.5rem' }}>₦{Number(p.price).toLocaleString()}</div>
+                <Link to={`/products/${p.id}`} onClick={e => e.stopPropagation()} className="img-wrap">
+                  <img src={p.img} alt={p.name} loading="lazy" />
+                  {p.featured && <span className="feat-badge">Featured</span>}
+                </Link>
 
+                <div className="info">
+                  <Link to={`/products/${p.id}`} onClick={e => e.stopPropagation()}>
+                    <h3>{p.name}</h3>
+                  </Link>
+                  {p.length && <p className="feat-length">{p.length}</p>}
+                  <div className="price">₦{Number(p.price).toLocaleString()}</div>
+
+                  <div className="card-actions">
+                    <button 
+                      className="pss-btn" 
+                      onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
+                    >Pay Small Small</button>
+                    <button 
+                      className="buy-once-btn" 
+                      onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
+                    >
+                      <ShoppingBag size={14} /> Buy Once
+                    </button>
+                  </div>
                 </div>
-              </motion.a>
+              </motion.div>
             ))}
           </div>
         </section>
