@@ -95,7 +95,7 @@ export default function Home() {
             <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>Featured Products</h2>
             <a href="/products" className="view-all" style={{ textDecoration: 'none', color: 'var(--foreground)', borderBottom: '1px solid var(--foreground)', paddingBottom: '2px' }}>View All →</a>
           </div>
-          <div className="feat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '2rem' }}>
+          <div className="products-grid">
             {featured.map((p, i) => (
               <motion.div
                 key={p.id}
