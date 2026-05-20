@@ -134,15 +134,9 @@ export default function ProductForm() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div className="form-group">
-            <label>Full Price (₦)</label>
-            <input type="number" name="price" value={formData.price} onChange={handleChange} required />
-          </div>
-          <div className="form-group">
-            <label>Pay Small Small Total (₦)</label>
-            <input type="number" name="pss" value={formData.pss} onChange={handleChange} required />
-          </div>
+        <div className="form-group">
+          <label>Full Price (₦)</label>
+          <input type="number" name="price" value={formData.price} onChange={handleChange} required />
         </div>
 
         <div className="form-group">

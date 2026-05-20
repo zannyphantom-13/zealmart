@@ -59,34 +59,36 @@ export default function Home() {
       </section>
 
       {/* FEATURED PRODUCTS (now dynamic) */}
-      <section className="featured-section container">
-        <div className="feat-header">
-          <h2>Trending Now</h2>
-          <a href="/products" className="view-all">View All <ArrowRight size={16} /></a>
-        </div>
-        <div className="feat-grid">
-          {featured.map((p, i) => (
-            <motion.a
-              key={p.id}
-              href={`/products/${p.id}`}
-              className="feat-card"
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: i * 0.1, duration: 0.5 }}
-            >
-              <div className="img-wrap">
-                <img src={p.img} alt={p.name} loading="lazy" />
-              </div>
-              <div className="info">
-                <h3>{p.name}</h3>
-                <p>{p.length}</p>
-                <div className="price">₦{Number(p.price).toLocaleString()}</div>
-              </div>
-            </motion.a>
-          ))}
-        </div>
-      </section>
+      {featured.length > 0 && (
+        <section className="featured-section container">
+          <div className="feat-header">
+            <h2>Trending Now</h2>
+            <a href="/products" className="view-all">View All <ArrowRight size={16} /></a>
+          </div>
+          <div className="feat-grid">
+            {featured.map((p, i) => (
+              <motion.a
+                key={p.id}
+                href={`/products/${p.id}`}
+                className="feat-card"
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+              >
+                <div className="img-wrap">
+                  <img src={p.img} alt={p.name} loading="lazy" />
+                </div>
+                <div className="info">
+                  <h3>{p.name}</h3>
+                  <p>{p.length}</p>
+                  <div className="price">₦{Number(p.price).toLocaleString()}</div>
+                </div>
+              </motion.a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* VALUE PROPS */}
       <section className="values-section">
