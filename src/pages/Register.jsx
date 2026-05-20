@@ -71,35 +71,47 @@ export default function Register() {
           <h1>Create Account</h1>
           <p className="sub">Join JD Good Hair today</p>
           {error && <div style={{ color: 'red', fontSize: '0.85rem', marginBottom: '1rem', background: '#fee2e2', padding: '0.5rem', borderRadius: '4px' }}>{error}</div>}
-          {successMessage && <div style={{ color: 'green', fontSize: '0.85rem', marginBottom: '1rem', background: '#dcfce7', padding: '0.5rem', borderRadius: '4px' }}>{successMessage}</div>}
-          <form onSubmit={handleRegister}>
-            <div className="form-group">
-              <label>First Name</label>
-              <input type="text" name="firstName" value={formData.firstName} placeholder="First name" required onChange={handleChange} />
+          
+          {successMessage ? (
+            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+              <div style={{ color: 'green', fontSize: '1.2rem', marginBottom: '1rem', background: '#dcfce7', padding: '1rem', borderRadius: '8px' }}>
+                {successMessage}
+              </div>
+              <p style={{ marginBottom: '2rem' }}>Please check your inbox (and spam folder) for the verification link.</p>
+              <Link to="/login" className="auth-submit" style={{ display: 'inline-block', textDecoration: 'none' }}>Go to Login</Link>
             </div>
-            <div className="form-group">
-              <label>Last Name</label>
-              <input type="text" name="lastName" placeholder="Last name" required onChange={handleChange} />
-            </div>
-            <div className="form-group">
-              <label>Phone Number</label>
-              <input type="tel" name="phone" placeholder="Phone number" required onChange={handleChange} />
-            </div>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="email" name="email" placeholder="you@example.com" required onChange={handleChange} />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input type="password" name="password" placeholder="Create a password" minLength="6" required onChange={handleChange} />
-            </div>
-            <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? 'Creating Account...' : 'Sign Up'}
-            </button>
-          </form>
-          <div className="auth-link">
-            Already have an account? <Link to="/login">Login</Link>
-          </div>
+          ) : (
+            <>
+              <form onSubmit={handleRegister}>
+                <div className="form-group">
+                  <label>First Name</label>
+                  <input type="text" name="firstName" value={formData.firstName} placeholder="First name" required onChange={handleChange} />
+                </div>
+                <div className="form-group">
+                  <label>Last Name</label>
+                  <input type="text" name="lastName" value={formData.lastName} placeholder="Last name" required onChange={handleChange} />
+                </div>
+                <div className="form-group">
+                  <label>Phone Number</label>
+                  <input type="tel" name="phone" value={formData.phone} placeholder="Phone number" required onChange={handleChange} />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input type="email" name="email" value={formData.email} placeholder="you@example.com" required onChange={handleChange} />
+                </div>
+                <div className="form-group">
+                  <label>Password</label>
+                  <input type="password" name="password" value={formData.password} placeholder="Create a password" minLength="6" required onChange={handleChange} />
+                </div>
+                <button type="submit" className="auth-submit" disabled={loading}>
+                  {loading ? 'Creating Account...' : 'Sign Up'}
+                </button>
+              </form>
+              <div className="auth-link">
+                Already have an account? <Link to="/login">Login</Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
       <Footer />
