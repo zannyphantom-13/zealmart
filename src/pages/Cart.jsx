@@ -39,47 +39,53 @@ export default function Cart() {
     setError('');
 
     // Korapay Initialization
-    if (window.Korapay) {
-      window.Korapay.initialize({
-        key: "pk_test_PRPabwReqFtVxH472nitLVfuUbFskvZQBxsmAaiA",
-        reference: `JDGH_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-        amount: totalToPayNow,
-        currency: "NGN",
-        customer: {
-          name: user.displayName || "JD Good Hair Customer",
-          email: user.email,
-        },
-        onClose: () => {
-          setLoading(false);
-        },
-        onSuccess: async (data) => {
-          try {
-            // Save Order to Firestore
-            await addDoc(collection(db, "orders"), {
-              userId: user.uid,
-              items: items,
-              totalAmount: items.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.price * (1 + (i.installments === 3 || i.installments === 4 ? 0.1 : i.installments > 4 ? 0.2 : 0))) * i.quantity), 0),
-              amountPaid: totalToPayNow,
-              status: 'Processing',
-              paymentRef: data.reference || data.transaction_reference,
-              createdAt: new Date(),
-            });
-            clearCart();
-            navigate('/profile'); // Redirect to profile to see order
-          } catch (err) {
-            console.error("Error saving order:", err);
-            setError("Payment successful but failed to save order. Please contact support.");
-          } finally {
+    try {
+      if (window.Korapay) {
+        window.Korapay.initialize({
+          key: "pk_test_PRPabwReqFtVxH472nitLVfuUbFskvZQBxsmAaiA",
+          reference: `JDGH_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          amount: Math.ceil(totalToPayNow),
+          currency: "NGN",
+          customer: {
+            name: user.displayName || "JD Good Hair Customer",
+            email: user.email || "customer@jdgoodhair.com",
+          },
+          onClose: () => {
+            setLoading(false);
+          },
+          onSuccess: async (data) => {
+            try {
+              // Save Order to Firestore
+              await addDoc(collection(db, "orders"), {
+                userId: user.uid,
+                items: items,
+                totalAmount: items.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.price * (1 + (i.installments === 3 || i.installments === 4 ? 0.1 : i.installments > 4 ? 0.2 : 0))) * i.quantity), 0),
+                amountPaid: totalToPayNow,
+                status: 'Processing',
+                paymentRef: data.reference || data.transaction_reference,
+                createdAt: new Date(),
+              });
+              clearCart();
+              navigate('/profile'); // Redirect to profile to see order
+            } catch (err) {
+              console.error("Error saving order:", err);
+              setError("Payment successful but failed to save order. Please contact support.");
+            } finally {
+              setLoading(false);
+            }
+          },
+          onFailed: () => {
+            setError("Payment failed. Please try again.");
             setLoading(false);
           }
-        },
-        onFailed: () => {
-          setError("Payment failed. Please try again.");
-          setLoading(false);
-        }
-      });
-    } else {
-      setError("Payment gateway is loading. Please refresh and try again.");
+        });
+      } else {
+        setError("Payment gateway is loading. Please refresh and try again.");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("Error initializing payment:", err);
+      setError("Failed to start payment. Please check your network and try again.");
       setLoading(false);
     }
   };
