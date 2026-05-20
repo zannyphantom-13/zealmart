@@ -6,6 +6,7 @@ import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 import AdminLayout from './pages/Admin/AdminLayout';
 import ProductManager from './pages/Admin/ProductManager';
 import ProductForm from './pages/Admin/ProductForm';
@@ -35,6 +36,7 @@ function App() {
         <Route path="/wigs"           element={<Shop />} />
         <Route path="/login"          element={<Login />} />
         <Route path="/register"       element={<Register />} />
+        <Route path="/profile"        element={<Profile />} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>

@@ -1,10 +1,19 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { Search, ShoppingBag, Menu, X } from 'lucide-react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Search, ShoppingBag, Menu, X, User, LogOut, Shield } from 'lucide-react';
+import useAuthStore from '../store/useAuthStore';
 import './Navbar.css';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user, isAdmin, logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+    setMobileOpen(false);
+  };
 
   return (
     <header className="site-header">
@@ -36,12 +45,35 @@ export default function Navbar() {
           <Link to="/products" aria-label="Search" className="icon-action-btn">
             <Search size={20} />
           </Link>
-          <Link to="/login" className="icon-action-btn">
-            <span>Login</span>
-          </Link>
-          <Link to="/register" className="icon-action-btn">
-            <span>Register</span>
-          </Link>
+          
+          {user ? (
+            <>
+              {isAdmin && (
+                <Link to="/admin" className="icon-action-btn" title="Admin Portal">
+                  <Shield size={20} />
+                  <span>Admin</span>
+                </Link>
+              )}
+              <Link to="/profile" className="icon-action-btn" title="Profile">
+                <User size={20} />
+                <span>Profile</span>
+              </Link>
+              <button onClick={handleLogout} className="icon-action-btn" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', font: 'inherit' }} title="Logout">
+                <LogOut size={20} />
+                <span>Logout</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="icon-action-btn">
+                <span>Login</span>
+              </Link>
+              <Link to="/register" className="icon-action-btn">
+                <span>Register</span>
+              </Link>
+            </>
+          )}
+
           <button className="cart-btn" aria-label="Cart">
             <ShoppingBag size={20} />
           </button>
@@ -58,8 +90,20 @@ export default function Navbar() {
           <Link to="/products?category=Closures" onClick={() => setMobileOpen(false)}>Closures</Link>
           <Link to="/products?category=Frontals" onClick={() => setMobileOpen(false)}>Frontals</Link>
           <hr />
-          <Link to="/login" onClick={() => setMobileOpen(false)}>Login</Link>
-          <Link to="/register" onClick={() => setMobileOpen(false)}>Register</Link>
+          {user ? (
+            <>
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setMobileOpen(false)}>Admin Portal</Link>
+              )}
+              <Link to="/profile" onClick={() => setMobileOpen(false)}>Profile</Link>
+              <button onClick={handleLogout} style={{ textAlign: 'left', padding: '1rem', background: 'none', border: 'none', width: '100%', fontSize: '1rem', cursor: 'pointer', fontFamily: 'inherit' }}>Logout</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={() => setMobileOpen(false)}>Login</Link>
+              <Link to="/register" onClick={() => setMobileOpen(false)}>Register</Link>
+            </>
+          )}
         </nav>
       )}
     </header>

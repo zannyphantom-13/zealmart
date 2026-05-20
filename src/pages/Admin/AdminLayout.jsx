@@ -1,6 +1,6 @@
 import { Navigate, Outlet, Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
-import { Package, PlusCircle, LogOut } from 'lucide-react';
+import { Package, PlusCircle, LogOut, User } from 'lucide-react';
 import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
 
@@ -23,9 +23,12 @@ export default function AdminLayout() {
           <Link to="/admin/new" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: 'var(--radius)', color: 'var(--foreground)' }}>
             <PlusCircle size={18} /> Add Product
           </Link>
+          <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: 'var(--radius)', color: 'var(--foreground)' }}>
+            <User size={18} /> Admin Profile
+          </Link>
           <button 
             onClick={() => signOut(auth)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: 'var(--radius)', color: 'hsl(340 72% 50%)', marginTop: 'auto', border: '1px solid hsl(340 72% 80%)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: 'var(--radius)', color: 'hsl(340 72% 50%)', marginTop: 'auto', border: '1px solid hsl(340 72% 80%)', cursor: 'pointer' }}
           >
             <LogOut size={18} /> Sign Out
           </button>

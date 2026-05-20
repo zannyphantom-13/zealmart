@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
 const useAuthStore = create((set) => ({
@@ -18,6 +18,10 @@ const useAuthStore = create((set) => ({
       });
     });
   },
+  logout: async () => {
+    await signOut(auth);
+    set({ user: null, isAdmin: false });
+  }
 }));
 
 export default useAuthStore;
