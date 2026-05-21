@@ -10,11 +10,11 @@ const useCartStore = create(
 
       setHydrated: () => set({ _hydrated: true }),
 
-      addToCart: (product, quantity = 1, paymentChoice = 'full', installments = 1, monthlyPayment = 0) => {
+      addToCart: (product, quantity = 1, paymentChoice = 'full', installments = 1, periodPayment = 0, paymentFrequency = 'monthly') => {
         set((state) => {
-          // Check if item exists with same payment choice
+          // Check if item exists with same payment choice and frequency
           const existingItemIndex = state.items.findIndex(
-            (item) => item.id === product.id && item.paymentChoice === paymentChoice && item.installments === installments
+            (item) => item.id === product.id && item.paymentChoice === paymentChoice && item.installments === installments && item.paymentFrequency === paymentFrequency
           );
 
           if (existingItemIndex > -1) {
@@ -35,7 +35,8 @@ const useCartStore = create(
                 quantity,
                 paymentChoice,
                 installments,
-                monthlyPayment,
+                periodPayment,
+                paymentFrequency,
                 cartItemId: Math.random().toString(36).substr(2, 9)
               }
             ]
@@ -84,8 +85,8 @@ const useCartStore = create(
           if (item.paymentChoice === 'full') {
             return total + (item.price * item.quantity);
           } else {
-            // First month payment
-            return total + (item.monthlyPayment * item.quantity);
+            // First period payment
+            return total + ((item.periodPayment || item.monthlyPayment || 0) * item.quantity);
           }
         }, 0);
       }

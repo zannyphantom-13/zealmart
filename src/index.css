@@ -160,7 +160,6 @@ img { display: block; max-width: 100%; height: auto; }
 .auth-link {
   color: var(--foreground);
   border: 1px solid var(--border);
-  margin-right: 0.25rem;
   background: transparent;
 }
 .auth-link:hover { 

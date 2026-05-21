@@ -18,6 +18,13 @@ export default function Cart() {
   const { items, _hydrated, removeFromCart, updateQuantity, getInitialPaymentTotal, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [deliveryInfo, setDeliveryInfo] = useState({
+    address: '',
+    city: '',
+    state: '',
+    phone: '',
+    instructions: ''
+  });
 
   // Load Korapay SDK on mount
   useEffect(() => {
@@ -52,6 +59,13 @@ export default function Cart() {
     setLoading(true);
     setError('');
 
+    if (!deliveryInfo.address || !deliveryInfo.city || !deliveryInfo.state || !deliveryInfo.phone) {
+      toast.error('Please fill out all required delivery fields.');
+      setError('Please fill out all required delivery fields.');
+      setLoading(false);
+      return;
+    }
+
     // Korapay Initialization
     try {
       if (window.Korapay) {
@@ -73,6 +87,7 @@ export default function Cart() {
               await addDoc(collection(db, "orders"), {
                 userId: user.uid,
                 items: items,
+                deliveryInfo: deliveryInfo,
                 totalAmount: items.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.price * (1 + (i.installments === 3 || i.installments === 4 ? 0.1 : i.installments > 4 ? 0.2 : 0))) * i.quantity), 0),
                 amountPaid: totalToPayNow,
                 status: 'Processing',
@@ -147,7 +162,7 @@ export default function Cart() {
 
                       {item.paymentChoice === 'installment' ? (
                         <div style={{ display: 'inline-block', background: 'var(--muted)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600' }}>
-                          Installment: {item.installments} Months
+                          Installment: {item.paymentFrequency === 'weekly' ? item.installments * 4 + ' Weeks' : item.installments + ' Months'}
                         </div>
                       ) : (
                         <div style={{ display: 'inline-block', background: 'hsl(340 100% 95%)', color: 'var(--primary)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600' }}>
@@ -171,7 +186,7 @@ export default function Cart() {
                     <div style={{ textAlign: 'right' }}>
                       {item.paymentChoice === 'installment' ? (
                         <>
-                          <div style={{ fontSize: '1.1rem', fontWeight: '700' }}>{fmt(item.monthlyPayment * item.quantity)} <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--muted-fg)' }}>/ mo</span></div>
+                          <div style={{ fontSize: '1.1rem', fontWeight: '700' }}>{fmt((item.periodPayment || item.monthlyPayment || 0) * item.quantity)} <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--muted-fg)' }}>/ {item.paymentFrequency === 'weekly' ? 'wk' : 'mo'}</span></div>
                         </>
                       ) : (
                         <div style={{ fontSize: '1.1rem', fontWeight: '700' }}>{fmt(item.price * item.quantity)}</div>
@@ -186,6 +201,17 @@ export default function Cart() {
           {/* Checkout Summary */}
           <div>
             <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)', position: 'sticky', top: '100px' }}>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>Delivery Information</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                <input type="text" placeholder="Full Address" value={deliveryInfo.address} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <input type="text" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} style={{ flex: 1, padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
+                  <input type="text" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} style={{ flex: 1, padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
+                </div>
+                <input type="tel" placeholder="Phone Number" value={deliveryInfo.phone} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
+                <textarea placeholder="Additional Instructions (Optional)" value={deliveryInfo.instructions} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, instructions: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none', resize: 'vertical', minHeight: '80px' }}></textarea>
+              </div>
+
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>Order Summary</h2>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: 'var(--muted-fg)' }}>
@@ -214,7 +240,7 @@ export default function Cart() {
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', background: 'var(--primary)', color: 'white', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
               >
                 <CreditCard size={20} />
-                {loading ? 'Processing...' : 'Pay via Korapay'}
+                {loading ? 'Processing...' : 'Confirm Order'}
               </button>
 
               <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--muted-fg)' }}>

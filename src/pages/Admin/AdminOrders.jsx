@@ -206,12 +206,29 @@ export default function AdminOrders() {
                           <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{item.name} <span style={{ color: 'var(--muted-fg)', fontWeight: 'normal' }}>×{item.quantity}</span></div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--muted-fg)' }}>Length: {item.length}</div>
                           <div style={{ display: 'inline-block', marginTop: '0.25rem', fontSize: '0.72rem', fontWeight: '600', padding: '0.15rem 0.5rem', borderRadius: '4px', background: item.paymentChoice === 'installment' ? 'hsl(210 100% 95%)' : 'hsl(340 100% 95%)', color: item.paymentChoice === 'installment' ? '#1d4ed8' : 'var(--primary)' }}>
-                            {item.paymentChoice === 'installment' ? `${item.installments} Installments` : 'Full Payment'}
+                            {item.paymentChoice === 'installment' ? `${item.paymentFrequency === 'weekly' ? item.installments * 4 + ' Weekly Payments' : item.installments + ' Monthly Payments'}` : 'Full Payment'}
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
+
+                  {/* Delivery Info */}
+                  {order.deliveryInfo && (
+                    <div style={{ flex: '1 1 200px', background: 'var(--card-bg)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                      <h3 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Delivery Info</h3>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--foreground)', lineHeight: '1.6' }}>
+                        <p style={{ fontWeight: '600' }}>{order.deliveryInfo.address}</p>
+                        <p>{order.deliveryInfo.city}, {order.deliveryInfo.state}</p>
+                        <p style={{ marginTop: '0.5rem' }}>📞 {order.deliveryInfo.phone}</p>
+                        {order.deliveryInfo.instructions && (
+                          <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--muted)', borderRadius: '6px', color: 'var(--muted-fg)', fontStyle: 'italic' }}>
+                            {order.deliveryInfo.instructions}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Payment Tracker */}
                   <div style={{ flex: '1 1 260px', background: 'var(--muted)', padding: '1.25rem', borderRadius: '10px' }}>

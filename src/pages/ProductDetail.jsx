@@ -23,6 +23,7 @@ export default function ProductDetail() {
 
   const [showInstallment, setShowInstallment] = useState(false);
   const [installments, setInstallments] = useState(2);
+  const [paymentFrequency, setPaymentFrequency] = useState('monthly');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -71,7 +72,9 @@ export default function ProductDetail() {
   const price = Number(product.price);
   const rate        = INTEREST[installments] / 100;
   const total       = price * (1 + rate);
-  const monthly     = total / installments;
+  
+  const totalPeriods = paymentFrequency === 'weekly' ? installments * 4 : installments;
+  const periodPayment = total / totalPeriods;
   const interestAmt = total - price;
 
   const handleBuyOnce = () => {
@@ -80,7 +83,7 @@ export default function ProductDetail() {
   };
 
   const handleInstallment = () => {
-    addToCart(product, 1, 'installment', installments, monthly);
+    addToCart(product, 1, 'installment', installments, periodPayment, paymentFrequency);
     navigate('/cart');
   };
 
@@ -132,8 +135,26 @@ export default function ProductDetail() {
                 <div className="pd-installment-panel">
                   {/* Installment count selector */}
                   <div className="pd-select-group">
-                    <label className="pd-select-label">Number of Monthly Installments</label>
-                    <div className="pd-installment-pills">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label className="pd-select-label">Duration (Months)</label>
+                      <div style={{ display: 'flex', background: 'var(--muted)', borderRadius: '999px', padding: '0.2rem' }}>
+                        <button
+                          className={`pss-btn ${paymentFrequency === 'monthly' ? 'active' : ''}`}
+                          style={{ border: 'none', background: paymentFrequency === 'monthly' ? 'white' : 'transparent', boxShadow: paymentFrequency === 'monthly' ? 'var(--shadow-card)' : 'none', padding: '0.3rem 0.8rem', borderRadius: '999px', transition: 'all 0.2s' }}
+                          onClick={() => setPaymentFrequency('monthly')}
+                        >
+                          Monthly
+                        </button>
+                        <button
+                          className={`pss-btn ${paymentFrequency === 'weekly' ? 'active' : ''}`}
+                          style={{ border: 'none', background: paymentFrequency === 'weekly' ? 'white' : 'transparent', boxShadow: paymentFrequency === 'weekly' ? 'var(--shadow-card)' : 'none', padding: '0.3rem 0.8rem', borderRadius: '999px', transition: 'all 0.2s' }}
+                          onClick={() => setPaymentFrequency('weekly')}
+                        >
+                          Weekly
+                        </button>
+                      </div>
+                    </div>
+                    <div className="pd-installment-pills" style={{ marginTop: '0.5rem' }}>
                       {[2, 3, 4, 5, 6].map(n => (
                         <button
                           key={n}
@@ -166,17 +187,17 @@ export default function ProductDetail() {
                       <span><strong>{fmt(total)}</strong></span>
                     </div>
                     <div className="pd-breakdown-row pd-monthly-row">
-                      <span>Monthly payment</span>
-                      <span className="pd-monthly-amt">{fmt(monthly)} / month</span>
+                      <span>{paymentFrequency === 'monthly' ? 'Monthly payment' : 'Weekly payment'}</span>
+                      <span className="pd-monthly-amt">{fmt(periodPayment)} / {paymentFrequency === 'weekly' ? 'wk' : 'mo'}</span>
                     </div>
                     <p className="pd-inst-note">
-                      × {installments} monthly payments of {fmt(monthly)}{' '}
+                      × {totalPeriods} {paymentFrequency} payments of {fmt(periodPayment)}{' '}
                       {interestAmt > 0 ? `(includes ${INTEREST[installments]}% interest)` : '(0% interest)'}
                     </p>
                   </div>
 
-                  <button className="pd-installment-btn" onClick={handleInstallment}>
-                    Start Installment Plan — {fmt(monthly)}/mo
+                  <button className="pd-installment-btn" style={{ width: '100%', height: '3rem', background: 'var(--card-bg)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontWeight: '600', fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s', marginTop: '1rem' }} onClick={handleInstallment}>
+                    Start {paymentFrequency === 'weekly' ? 'Weekly' : 'Monthly'} Plan — {fmt(periodPayment)}/{paymentFrequency === 'weekly' ? 'wk' : 'mo'}
                   </button>
                 </div>
               )}

@@ -131,7 +131,12 @@ export default function Shop() {
                   <div className="price">₦{Number(p.price).toLocaleString()}</div>
 
                   <div className="card-actions">
-
+                    <button 
+                      className="pss-btn"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
+                    >
+                      Pay Small Small
+                    </button>
                     <button 
                       className="buy-once-btn"
                       onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
