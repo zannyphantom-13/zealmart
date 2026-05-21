@@ -18,6 +18,12 @@
   }
 }
 
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
 .mobile-nav {
   display: flex;
   flex-direction: column;

@@ -44,7 +44,7 @@ export default function Navbar() {
         </NavLink>
 
         {/* Desktop nav */}
-        <nav className="header-nav">
+        <nav className="header-nav desktop-only">
           <NavLink to="/" end>Home</NavLink>
           <NavLink to="/products">Shop</NavLink>
           <NavLink to="/products?category=Bundles">Bundles</NavLink>
@@ -53,25 +53,25 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="header-actions">
-          <NavLink to="/products" aria-label="Search" className="icon-action-btn">
+          <NavLink to="/products" aria-label="Search" className="icon-action-btn desktop-only">
             <Search size={20} />
           </NavLink>
 
           {user ? (
             <>
               {isAdmin && (
-                <NavLink to="/admin" className="icon-action-btn" title="Admin Portal">
+                <NavLink to="/admin" className="icon-action-btn desktop-only" title="Admin Portal">
                   <Shield size={20} />
                   <span>Admin</span>
                 </NavLink>
               )}
-              <NavLink to="/profile" className="icon-action-btn" title="Profile">
+              <NavLink to="/profile" className="icon-action-btn desktop-only" title="Profile">
                 <User size={20} />
                 <span>Profile</span>
               </NavLink>
               <button
                 onClick={handleLogout}
-                className="icon-action-btn"
+                className="icon-action-btn desktop-only"
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', font: 'inherit' }}
                 title="Logout"
               >
@@ -81,10 +81,10 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <NavLink to="/login" className="icon-action-btn">
+              <NavLink to="/login" className="icon-action-btn desktop-only">
                 <span>Login</span>
               </NavLink>
-              <NavLink to="/register" className="icon-action-btn">
+              <NavLink to="/register" className="icon-action-btn desktop-only">
                 <span>Register</span>
               </NavLink>
             </>
