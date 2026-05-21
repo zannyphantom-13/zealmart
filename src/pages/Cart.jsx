@@ -141,13 +141,13 @@ export default function Cart() {
 
         {error && <div style={{ color: 'red', background: '#fee2e2', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>{error}</div>}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem', lg: { gridTemplateColumns: '2fr 1fr' } }}>
+        <div className="cart-layout">
 
           {/* Items List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {items.map((item) => (
-              <div key={item.cartItemId} style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <img src={item.img} alt={item.name} loading="lazy" decoding="async" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
+              <div key={item.cartItemId} className="cart-item-card">
+                <img src={item.img} alt={item.name} loading="lazy" decoding="async" className="cart-item-img" />
 
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -171,8 +171,8 @@ export default function Cart() {
                     </button>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)', borderRadius: '6px', padding: '0.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div className="cart-qty-ctrl">
                       <button onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} style={{ background: 'none', border: 'none', padding: '0.25rem 0.75rem', cursor: 'pointer', fontSize: '1.2rem' }}>-</button>
                       <span style={{ fontWeight: '500' }}>{item.quantity}</span>
                       <button onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} style={{ background: 'none', border: 'none', padding: '0.25rem 0.75rem', cursor: 'pointer', fontSize: '1.2rem' }}>+</button>
@@ -199,9 +199,9 @@ export default function Cart() {
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>Delivery Information</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
                 <input type="text" placeholder="Full Address" value={deliveryInfo.address} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <input type="text" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} style={{ flex: 1, padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
-                  <input type="text" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} style={{ flex: 1, padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  <input type="text" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} style={{ flex: '1 1 120px', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
+                  <input type="text" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} style={{ flex: '1 1 120px', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
                 </div>
                 <input type="tel" placeholder="Phone Number" value={deliveryInfo.phone} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
                 <textarea placeholder="Additional Instructions (Optional)" value={deliveryInfo.instructions} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, instructions: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none', resize: 'vertical', minHeight: '80px' }}></textarea>

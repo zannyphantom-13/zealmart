@@ -15,11 +15,8 @@ export default function AdminOrders() {
   const [newlyCompleted, setNewlyCompleted] = useState(new Set());
   const [userCache, setUserCache] = useState({});
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
   const fetchOrders = async () => {
+    await Promise.resolve();
     setLoading(true);
     try {
       const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
@@ -37,7 +34,7 @@ export default function AdminOrders() {
             if (userSnap.exists()) {
               cache[uid] = userSnap.data();
             }
-          } catch (_) {
+          } catch {
             // silently skip if user doc missing
           }
         })
@@ -54,6 +51,11 @@ export default function AdminOrders() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchOrders();
+  }, []);
 
   const handleUpdateAmountPaid = async (orderId, newAmount, totalAmount) => {
     setUpdating(true);
@@ -96,7 +98,7 @@ export default function AdminOrders() {
       <h1 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', fontFamily: 'var(--font-display)' }}>Customer Orders</h1>
 
       {/* Summary Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         {[
           { label: 'Total Orders', value: totalOrders, icon: <Package size={20} />, color: '#3b82f6', bg: '#eff6ff' },
           { label: 'Pending Payment', value: pendingOrders, icon: <AlertCircle size={20} />, color: '#f59e0b', bg: '#fffbeb' },
@@ -156,31 +158,35 @@ export default function AdminOrders() {
                 )}
 
                 {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', padding: '1rem 1.5rem', background: 'var(--muted)', borderBottom: '1px solid var(--border)' }}>
-                  <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', padding: '1rem', background: 'var(--muted)', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ flex: '1 1 100px' }}>
                     <span style={{ fontSize: '0.8rem', color: 'var(--muted-fg)', display: 'block' }}>Order ID</span>
-                    <strong style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>#{order.id.slice(0, 12)}…</strong>
+                    <strong style={{ fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all' }}>#{order.id}</strong>
                   </div>
-                  <div>
+                  <div style={{ flex: '1 1 100px' }}>
                     <span style={{ fontSize: '0.8rem', color: 'var(--muted-fg)', display: 'block' }}>Date</span>
                     <strong>{order.createdAt?.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
                   </div>
                   {/* Customer info */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ background: 'var(--primary)', color: 'white', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: '600' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: '1 1 200px' }}>
+                    <div style={{ background: 'var(--primary)', color: 'white', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: '600', flexShrink: 0 }}>
                       {customer ? customer.firstName?.[0]?.toUpperCase() : <Users size={14} />}
                     </div>
-                    <div>
-                      <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: '600', fontSize: '0.9rem', wordBreak: 'break-word' }}>
                         {customer ? `${customer.firstName} ${customer.lastName}` : 'Customer'}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--muted-fg)' }}>
-                        {customer?.email || order.userId?.slice(0, 16)}
-                        {customer?.phone && ` • ${customer.phone}`}
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted-fg)', wordBreak: 'break-all' }}>
+                        {customer?.email || order.userId}
                       </div>
+                      {customer?.phone && (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--muted-fg)', wordBreak: 'break-word' }}>
+                          {customer.phone}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div>
+                  <div style={{ flex: '1 1 100px' }}>
                     <span style={{ fontSize: '0.8rem', color: 'var(--muted-fg)', display: 'block' }}>Status</span>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
@@ -195,9 +201,9 @@ export default function AdminOrders() {
                 </div>
 
                 {/* Body */}
-                <div style={{ padding: '1.5rem', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                <div style={{ padding: '1rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                   {/* Items */}
-                  <div style={{ flex: '1 1 280px' }}>
+                  <div style={{ flex: '1 1 100%' }}>
                     <h3 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Items Ordered</h3>
                     {order.items?.map((item, idx) => (
                       <div key={idx} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: idx < order.items.length - 1 ? '1px solid var(--border)' : 'none' }}>
@@ -215,14 +221,14 @@ export default function AdminOrders() {
 
                   {/* Delivery Info */}
                   {order.deliveryInfo && (
-                    <div style={{ flex: '1 1 200px', background: 'var(--card-bg)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                    <div style={{ flex: '1 1 100%', minWidth: '200px', background: 'var(--card-bg)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border)' }}>
                       <h3 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Delivery Info</h3>
                       <div style={{ fontSize: '0.85rem', color: 'var(--foreground)', lineHeight: '1.6' }}>
                         <p style={{ fontWeight: '600' }}>{order.deliveryInfo.address}</p>
                         <p>{order.deliveryInfo.city}, {order.deliveryInfo.state}</p>
                         <p style={{ marginTop: '0.5rem' }}>📞 {order.deliveryInfo.phone}</p>
                         {order.deliveryInfo.instructions && (
-                          <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--muted)', borderRadius: '6px', color: 'var(--muted-fg)', fontStyle: 'italic' }}>
+                          <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--muted)', borderRadius: '6px', color: 'var(--muted-fg)', fontStyle: 'italic', wordBreak: 'break-word' }}>
                             {order.deliveryInfo.instructions}
                           </div>
                         )}
@@ -231,7 +237,7 @@ export default function AdminOrders() {
                   )}
 
                   {/* Payment Tracker */}
-                  <div style={{ flex: '1 1 260px', background: 'var(--muted)', padding: '1.25rem', borderRadius: '10px' }}>
+                  <div style={{ flex: '1 1 100%', minWidth: '260px', background: 'var(--muted)', padding: '1.25rem', borderRadius: '10px' }}>
                     <h3 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Payment Tracker</h3>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.9rem' }}>

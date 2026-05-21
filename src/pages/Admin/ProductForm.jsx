@@ -35,7 +35,7 @@ export default function ProductForm() {
           } else {
             setError("Product not found");
           }
-        } catch (err) {
+        } catch {
           setError("Failed to load product");
         }
       };
@@ -124,7 +124,7 @@ export default function ProductForm() {
           <input type="text" name="name" value={formData.name} onChange={handleChange} required />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
           <div className="form-group">
             <label>Category</label>
             <select name="category" value={formData.category} onChange={handleChange} style={{ padding: '0.75rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
@@ -158,7 +158,7 @@ export default function ProductForm() {
           <label htmlFor="featured" style={{ cursor: 'pointer' }}>Feature on homepage?</label>
         </div>
 
-        <button type="submit" className="buy-once-btn" style={{ width: '100%', justifyContent: 'center', marginTop: '1rem' }} disabled={loading}>
+        <button type="submit" className="buy-once-btn" style={{ width: '100%', justifyContent: 'center', marginTop: '1rem', height: '2.75rem', fontSize: '0.9rem' }} disabled={loading}>
           {loading ? 'Saving...' : 'Save Product'}
         </button>
       </form>

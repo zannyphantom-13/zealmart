@@ -50,12 +50,12 @@ img { display: block; max-width: 100%; height: auto; }
 
 .header-inner {
   display: flex; align-items: center; justify-content: space-between;
-  height: 80px;
+  height: 90px;
   position: relative;
   transition: height 0.3s ease;
 }
 .site-header.scrolled .header-inner {
-  height: 64px;
+  height: 70px;
 }
 
 /* Left Logo */
@@ -65,13 +65,13 @@ img { display: block; max-width: 100%; height: auto; }
   flex: 1;
 }
 .header-logo img {
-  height: 64px; 
+  height: 75px; 
   width: auto; 
   object-fit: contain;
   transition: height 0.3s ease;
 }
 .site-header.scrolled .header-logo img {
-  height: 48px;
+  height: 55px;
 }
 
 /* Nav & Actions Base */
@@ -184,6 +184,8 @@ img { display: block; max-width: 100%; height: auto; }
 @media (max-width: 899px) {
   .header-nav { display: none; }
   .header-actions { flex: 0 1 auto; }
+  .header-logo img { height: 50px; } /* Prevent large logo from crushing search bar on mobile */
+  .site-header.scrolled .header-logo img { height: 42px; }
 }
 
 /* ── HERO ── */
@@ -341,6 +343,21 @@ img { display: block; max-width: 100%; height: auto; }
 .buy-once-btn { flex: 1; height: 2.25rem; padding: 0 0.5rem; border-radius: var(--radius); font-size: 0.7rem; font-weight: 600; color: white; background: var(--gradient-primary); border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; transition: opacity 0.2s; box-shadow: var(--shadow-soft); }
 .buy-once-btn:hover { opacity: 0.9; }
 
+@media (max-width: 639px) {
+  .product-card .card-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+  .product-card .card-actions .pss-btn,
+  .product-card .card-actions .buy-once-btn {
+    width: 100%;
+    height: 2.25rem;
+    font-size: 0.75rem;
+    flex: none;
+  }
+}
+
 /* ── PRODUCT DETAIL ── */
 .pd-container { padding: 2rem 1rem; }
 .pd-back-link { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--muted-fg); margin-bottom: 1.5rem; transition: color 0.2s; }
@@ -383,6 +400,58 @@ img { display: block; max-width: 100%; height: auto; }
 
 .pd-buy-btn { width: 100%; height: 3rem; background: var(--gradient-primary); color: white; border: none; border-radius: var(--radius); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: var(--shadow-soft); transition: opacity 0.2s; }
 .pd-buy-btn:hover { opacity: 0.9; }
+
+/* ── CART PAGE ── */
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+@media (min-width: 900px) {
+  .cart-layout {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+.cart-item-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+@media (min-width: 640px) {
+  .cart-item-card {
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+}
+.cart-item-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+@media (min-width: 640px) {
+  .cart-item-img {
+    width: 100px;
+    height: 100px;
+  }
+}
+.cart-qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.25rem;
+}
+@media (min-width: 640px) {
+  .cart-qty-ctrl {
+    gap: 1rem;
+  }
+}
 
 /* ── FOOTER ── */
 .site-footer { background: var(--foreground); color: hsl(340 10% 65%); }
@@ -433,7 +502,11 @@ img { display: block; max-width: 100%; height: auto; }
 .cat-card:hover .link-text { gap: 0.75rem; opacity: 1; }
 
 /* ── ADMIN OVERRIDES ── */
-.admin-sidebar { width: 250px; background: var(--card); border-right: 1px solid var(--border); padding: 2rem 1rem; display: flex; flex-direction: column; }
-@media (max-width: 768px) {
-  .admin-sidebar { display: none; } /* Normally we'd add a hamburger menu here, but keeping it simple for now */
+.admin-layout-container { display: flex; flex-direction: column; min-height: calc(100vh - 70px); background: var(--muted); }
+.admin-sidebar { width: 100%; background: var(--card); border-bottom: 1px solid var(--border); padding: 1rem; display: flex; flex-direction: column; }
+.admin-nav { display: flex; flex-wrap: wrap; gap: 0.35rem; flex: 1; }
+@media (min-width: 768px) {
+  .admin-layout-container { flex-direction: row; }
+  .admin-sidebar { width: 250px; border-right: 1px solid var(--border); border-bottom: none; padding: 2rem 1rem; }
+  .admin-nav { flex-direction: column; }
 }

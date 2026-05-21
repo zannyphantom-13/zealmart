@@ -41,73 +41,75 @@ export default function Navbar() {
     isActive ? 'mobile-nav-link active' : 'mobile-nav-link';
 
   return (
-    <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
-      <div className="container header-inner">
-        {/* Left Logo */}
-        <NavLink to="/" className="header-logo" onClick={closeMobile}>
-          <img src="/logo.png" alt="JD Good Hair Logo" />
-        </NavLink>
-
-        {/* Center Desktop Nav */}
-        <nav className="header-nav desktop-only">
-          <NavLink to="/" end className="nav-item">Home</NavLink>
-          <NavLink to="/products" className="nav-item">Shop</NavLink>
-          <NavLink to="/products?category=Bundles" className="nav-item">Bundles</NavLink>
-          <NavLink to="/products?category=Wigs" className="nav-item">Wigs</NavLink>
-        </nav>
-
-        {/* Center Mobile Search Bar */}
-        <div className="mobile-search-wrapper mobile-only">
-          <NavLink to="/products" className="mobile-search-bar">
-            <Search size={16} strokeWidth={2} />
-            <span>Search...</span>
-          </NavLink>
-        </div>
-
-        {/* Right Actions */}
-        <div className="header-actions">
-          <NavLink to="/products" aria-label="Search" className="action-icon desktop-only">
-            <Search size={20} strokeWidth={1.5} />
+    <>
+      <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
+        <div className="container header-inner">
+          {/* Left Logo */}
+          <NavLink to="/" className="header-logo" onClick={closeMobile}>
+            <img src="/logo.png" alt="JD Good Hair Logo" />
           </NavLink>
 
-          {user ? (
-            <div className="user-actions desktop-only">
-              {isAdmin && (
-                <NavLink to="/admin" className="action-icon" title="Admin Portal">
-                  <Shield size={20} strokeWidth={1.5} />
+          {/* Center Desktop Nav */}
+          <nav className="header-nav desktop-only">
+            <NavLink to="/" end className="nav-item">Home</NavLink>
+            <NavLink to="/products" className="nav-item">Shop</NavLink>
+            <NavLink to="/products?category=Bundles" className="nav-item">Bundles</NavLink>
+            <NavLink to="/products?category=Wigs" className="nav-item">Wigs</NavLink>
+          </nav>
+
+          {/* Center Mobile Search Bar */}
+          <div className="mobile-search-wrapper mobile-only">
+            <NavLink to="/products" className="mobile-search-bar">
+              <Search size={16} strokeWidth={2} />
+              <span>Search...</span>
+            </NavLink>
+          </div>
+
+          {/* Right Actions */}
+          <div className="header-actions">
+            <NavLink to="/products" aria-label="Search" className="action-icon desktop-only">
+              <Search size={20} strokeWidth={1.5} />
+            </NavLink>
+
+            {user ? (
+              <div className="user-actions desktop-only">
+                {isAdmin && (
+                  <NavLink to="/admin" className="action-icon" title="Admin Portal">
+                    <Shield size={20} strokeWidth={1.5} />
+                  </NavLink>
+                )}
+                <NavLink to="/profile" className="action-icon" title="Profile">
+                  <User size={20} strokeWidth={1.5} />
                 </NavLink>
-              )}
-              <NavLink to="/profile" className="action-icon" title="Profile">
-                <User size={20} strokeWidth={1.5} />
-              </NavLink>
-              <button onClick={handleLogout} className="action-icon" title="Logout">
-                <LogOut size={20} strokeWidth={1.5} />
-              </button>
-            </div>
-          ) : (
-            <div className="auth-actions desktop-only">
-              <NavLink to="/login" className="auth-link">Login</NavLink>
-              <NavLink to="/register" className="auth-btn">Register</NavLink>
-            </div>
-          )}
-
-          <NavLink to="/cart" className="action-icon cart-action" aria-label="Cart">
-            <ShoppingBag size={20} strokeWidth={1.5} />
-            {totalItems > 0 && (
-              <span className="cart-badge">{totalItems}</span>
+                <button onClick={handleLogout} className="action-icon" title="Logout">
+                  <LogOut size={20} strokeWidth={1.5} />
+                </button>
+              </div>
+            ) : (
+              <div className="auth-actions desktop-only">
+                <NavLink to="/login" className="auth-link">Login</NavLink>
+                <NavLink to="/register" className="auth-btn">Register</NavLink>
+              </div>
             )}
-          </NavLink>
 
-          {/* Mobile menu button */}
-          <button
-            className="mobile-menu-btn"
-            aria-label={mobileOpen ? 'Close menu' : 'Menu'}
-            onClick={() => setMobileOpen(v => !v)}
-          >
-            <Menu size={24} strokeWidth={1.5} />
-          </button>
+            <NavLink to="/cart" className="action-icon cart-action" aria-label="Cart">
+              <ShoppingBag size={20} strokeWidth={1.5} />
+              {totalItems > 0 && (
+                <span className="cart-badge">{totalItems}</span>
+              )}
+            </NavLink>
+
+            {/* Mobile menu button */}
+            <button
+              className="mobile-menu-btn"
+              aria-label={mobileOpen ? 'Close menu' : 'Menu'}
+              onClick={() => setMobileOpen(v => !v)}
+            >
+              {mobileOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* Mobile Drawer Overlay */}
       <div className={`mobile-drawer-overlay ${mobileOpen ? 'open' : ''}`} onClick={closeMobile}></div>
@@ -129,7 +131,7 @@ export default function Navbar() {
             <NavLink to="/products?category=Closures" className={navLinkClass}>Closures</NavLink>
             <NavLink to="/products?category=Frontals" className={navLinkClass}>Frontals</NavLink>
           </nav>
-          
+
           <div className="drawer-footer">
             {user ? (
               <div className="mobile-user-menu">
@@ -148,6 +150,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }

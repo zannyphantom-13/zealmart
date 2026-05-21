@@ -28,17 +28,17 @@ export default function AdminLayout() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: 'calc(100vh - 64px)', background: 'var(--muted)' }}>
-      {/* Sidebar */}
+    <div className="admin-layout-container">
+      {/* Sidebar / Topbar */}
       <aside className="admin-sidebar">
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '1rem' }}>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', color: 'var(--primary)', marginBottom: '0.25rem' }}>
             Admin Panel
           </h2>
-          <p style={{ fontSize: '0.75rem', color: 'var(--muted-fg)' }}>{user.email}</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--muted-fg)', wordBreak: 'break-all' }}>{user.email}</p>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1 }}>
+        <nav className="admin-nav">
           <NavLink
             to="/admin"
             end
@@ -86,7 +86,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '2rem', overflowX: 'auto' }}>
+      <main style={{ flex: 1, padding: '1rem', overflowX: 'hidden' }}>
         <Outlet />
       </main>
     </div>
