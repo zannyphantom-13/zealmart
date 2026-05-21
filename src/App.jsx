@@ -1,22 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Shop from './pages/Shop';
-import ProductDetail from './pages/ProductDetail';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Profile from './pages/Profile';
-import AdminLayout from './pages/Admin/AdminLayout';
-import ProductManager from './pages/Admin/ProductManager';
-import ProductForm from './pages/Admin/ProductForm';
-import Cart from './pages/Cart';
-import AdminOrders from './pages/Admin/AdminOrders';
 import useAuthStore from './store/useAuthStore';
+import { Toaster } from 'react-hot-toast';
 import './index.css';
 
+// Lazy load pages for performance
+const Home = lazy(() => import('./pages/Home'));
+const Shop = lazy(() => import('./pages/Shop'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const VerifyOTP = lazy(() => import('./pages/VerifyOTP'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Cart = lazy(() => import('./pages/Cart'));
+
+// Admin pages
+const AdminLayout = lazy(() => import('./pages/Admin/AdminLayout'));
+const ProductManager = lazy(() => import('./pages/Admin/ProductManager'));
+const ProductForm = lazy(() => import('./pages/Admin/ProductForm'));
+const AdminOrders = lazy(() => import('./pages/Admin/AdminOrders'));
+
 function App() {
-  const { init, loading } = useAuthStore();
+  const { user, init, loading } = useAuthStore();
 
   useEffect(() => {
     init();
@@ -29,26 +35,30 @@ function App() {
   return (
     <Router>
       <Navbar />
-      <Routes>
-        <Route path="/"          element={<Home />} />
-        <Route path="/products"      element={<Shop />} />
-        <Route path="/products/:id"   element={<ProductDetail />} />
-        <Route path="/shop"           element={<Shop />} />
-        <Route path="/bundles"        element={<Shop />} />
-        <Route path="/wigs"           element={<Shop />} />
-        <Route path="/login"          element={<Login />} />
-        <Route path="/register"       element={<Register />} />
-        <Route path="/profile"        element={<Profile />} />
-        <Route path="/cart"           element={<Cart />} />
-        
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<ProductManager />} />
-          <Route path="new" element={<ProductForm />} />
-          <Route path="edit/:id" element={<ProductForm />} />
-          <Route path="orders" element={<AdminOrders />} />
-        </Route>
-      </Routes>
+      <Toaster position="top-center" toastOptions={{ style: { background: '#333', color: '#fff', borderRadius: '8px' } }} />
+      <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: 'var(--muted-fg)' }}>Loading...</div>}>
+        <Routes>
+          <Route path="/"          element={<Home />} />
+          <Route path="/products"      element={<Shop />} />
+          <Route path="/products/:id"   element={<ProductDetail />} />
+          <Route path="/shop"           element={<Shop />} />
+          <Route path="/bundles"        element={<Shop />} />
+          <Route path="/wigs"           element={<Shop />} />
+          <Route path="/login"     element={<Login />} />
+          <Route path="/register"  element={<Register />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
+          <Route path="/profile"   element={user ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/cart"           element={<Cart />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<ProductManager />} />
+            <Route path="new" element={<ProductForm />} />
+            <Route path="edit/:id" element={<ProductForm />} />
+            <Route path="orders" element={<AdminOrders />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

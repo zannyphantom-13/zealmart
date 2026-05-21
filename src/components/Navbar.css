@@ -1,1 +1,86 @@
-/* Navbar.css is intentionally empty — all styles are in index.css */
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .mobile-menu-btn {
+    display: none;
+  }
+  .mobile-nav {
+    display: none !important;
+  }
+}
+
+.mobile-nav {
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  box-shadow: var(--shadow-card);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  z-index: 40;
+}
+
+.mobile-nav-link {
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--foreground);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s, color 0.2s;
+}
+
+.mobile-nav-link:last-child {
+  border-bottom: none;
+}
+
+.mobile-nav-link:hover, .mobile-nav-link.active {
+  background: var(--muted);
+  color: var(--primary);
+}
+
+.mobile-nav hr {
+  margin: 0;
+  border: none;
+  border-top: 4px solid var(--muted);
+}
+
+.mobile-logout-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  color: hsl(340 72% 50%);
+}
+
+.cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

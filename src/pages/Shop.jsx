@@ -80,14 +80,6 @@ export default function Shop() {
       </div>
 
       <div className="container">
-        <div className="pss-banner">
-          <div className="left">
-            <strong>Pay Small Small Available</strong>
-            <p>Choose daily, every 3 days, every 4 days, or weekly payments. Maximum duration: 30 days.</p>
-          </div>
-          <button className="learn-more">Learn More</button>
-        </div>
-
         <div className="search-bar">
           <Search size={16} className="search-icon" />
           <input
@@ -127,7 +119,7 @@ export default function Shop() {
                 style={{ cursor: 'pointer' }}
               >
                 <Link to={`/products/${p.id}`} onClick={e => e.stopPropagation()} className="img-wrap">
-                  <img src={p.img} alt={p.name} loading="lazy" />
+                  <img src={p.img} alt={p.name} loading="lazy" decoding="async" />
                   {p.featured && <span className="feat-badge">Featured</span>}
                 </Link>
 
@@ -139,12 +131,7 @@ export default function Shop() {
                   <div className="price">₦{Number(p.price).toLocaleString()}</div>
 
                   <div className="card-actions">
-                    <button 
-                      className="pss-btn" 
-                      onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
-                    >
-                      Pay Small Small
-                    </button>
+
                     <button 
                       className="buy-once-btn"
                       onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
@@ -159,9 +146,7 @@ export default function Shop() {
           </div>
         )}
 
-        <p className="pss-note">
-          Note: Orders under installment plans are delivered only after full payment is completed.
-        </p>
+
       </div>
 
       <Footer />

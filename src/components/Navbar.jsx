@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Search, ShoppingBag, Menu, X, User, LogOut, Shield } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
+import toast from 'react-hot-toast';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -11,13 +12,19 @@ export default function Navbar() {
   const { user, isAdmin, logout } = useAuthStore();
   const { getTotalItems } = useCartStore();
 
+  const closeMobile = () => setMobileOpen(false);
+
   const handleLogout = async () => {
     await logout();
+    toast.success('Signed out successfully');
     navigate('/');
-    setMobileOpen(false);
+    closeMobile();
   };
 
   const totalItems = getTotalItems();
+
+  const navLinkClass = ({ isActive }) =>
+    isActive ? 'mobile-nav-link active' : 'mobile-nav-link';
 
   return (
     <header className="site-header">
@@ -32,9 +39,9 @@ export default function Navbar() {
         </button>
 
         {/* Logo */}
-        <Link to="/" className="header-logo">
+        <NavLink to="/" className="header-logo" onClick={closeMobile}>
           <img src="/logo.png" alt="JD Good Hair Logo" />
-        </Link>
+        </NavLink>
 
         {/* Desktop nav */}
         <nav className="header-nav">
@@ -46,86 +53,82 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="header-actions">
-          <Link to="/products" aria-label="Search" className="icon-action-btn">
+          <NavLink to="/products" aria-label="Search" className="icon-action-btn">
             <Search size={20} />
-          </Link>
-          
+          </NavLink>
+
           {user ? (
             <>
               {isAdmin && (
-                <Link to="/admin" className="icon-action-btn" title="Admin Portal">
+                <NavLink to="/admin" className="icon-action-btn" title="Admin Portal">
                   <Shield size={20} />
                   <span>Admin</span>
-                </Link>
+                </NavLink>
               )}
-              <Link to="/profile" className="icon-action-btn" title="Profile">
+              <NavLink to="/profile" className="icon-action-btn" title="Profile">
                 <User size={20} />
                 <span>Profile</span>
-              </Link>
-              <button onClick={handleLogout} className="icon-action-btn" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', font: 'inherit' }} title="Logout">
+              </NavLink>
+              <button
+                onClick={handleLogout}
+                className="icon-action-btn"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', font: 'inherit' }}
+                title="Logout"
+              >
                 <LogOut size={20} />
                 <span>Logout</span>
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="icon-action-btn">
+              <NavLink to="/login" className="icon-action-btn">
                 <span>Login</span>
-              </Link>
-              <Link to="/register" className="icon-action-btn">
+              </NavLink>
+              <NavLink to="/register" className="icon-action-btn">
                 <span>Register</span>
-              </Link>
+              </NavLink>
             </>
           )}
 
-          <Link to="/cart" className="cart-btn" aria-label="Cart" style={{ position: 'relative' }}>
+          <NavLink to="/cart" className="cart-btn" aria-label="Cart" style={{ position: 'relative' }}>
             <ShoppingBag size={20} />
             {totalItems > 0 && (
-              <span style={{
-                position: 'absolute',
-                top: '0',
-                right: '0',
-                background: 'var(--primary)',
-                color: 'white',
-                fontSize: '0.65rem',
-                fontWeight: 'bold',
-                width: '18px',
-                height: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '50%',
-                transform: 'translate(25%, -25%)'
-              }}>
-                {totalItems}
-              </span>
+              <span className="cart-badge">{totalItems}</span>
             )}
-          </Link>
+          </NavLink>
         </div>
       </div>
 
       {/* Mobile dropdown */}
       {mobileOpen && (
         <nav className="mobile-nav">
-          <Link to="/" onClick={() => setMobileOpen(false)}>Home</Link>
-          <Link to="/products" onClick={() => setMobileOpen(false)}>Shop</Link>
-          <Link to="/products?category=Bundles" onClick={() => setMobileOpen(false)}>Bundles</Link>
-          <Link to="/products?category=Wigs" onClick={() => setMobileOpen(false)}>Wigs</Link>
-          <Link to="/products?category=Closures" onClick={() => setMobileOpen(false)}>Closures</Link>
-          <Link to="/products?category=Frontals" onClick={() => setMobileOpen(false)}>Frontals</Link>
+          <NavLink to="/" end className={navLinkClass} onClick={closeMobile}>Home</NavLink>
+          <NavLink to="/products" className={navLinkClass} onClick={closeMobile}>Shop</NavLink>
+          <NavLink to="/products?category=Bundles" className={navLinkClass} onClick={closeMobile}>Bundles</NavLink>
+          <NavLink to="/products?category=Wigs" className={navLinkClass} onClick={closeMobile}>Wigs</NavLink>
+          <NavLink to="/products?category=Closures" className={navLinkClass} onClick={closeMobile}>Closures</NavLink>
+          <NavLink to="/products?category=Frontals" className={navLinkClass} onClick={closeMobile}>Frontals</NavLink>
           <hr />
+          <NavLink to="/cart" className={navLinkClass} onClick={closeMobile}>
+            🛍️ Cart {totalItems > 0 && `(${totalItems})`}
+          </NavLink>
           {user ? (
             <>
               {isAdmin && (
-                <Link to="/admin" onClick={() => setMobileOpen(false)}>Admin Portal</Link>
+                <NavLink to="/admin" className={navLinkClass} onClick={closeMobile}>⚙️ Admin Portal</NavLink>
               )}
-              <Link to="/profile" onClick={() => setMobileOpen(false)}>Profile</Link>
-              <button onClick={handleLogout} style={{ textAlign: 'left', padding: '1rem', background: 'none', border: 'none', width: '100%', fontSize: '1rem', cursor: 'pointer', fontFamily: 'inherit' }}>Logout</button>
+              <NavLink to="/profile" className={navLinkClass} onClick={closeMobile}>👤 Profile</NavLink>
+              <button
+                onClick={handleLogout}
+                className="mobile-nav-link mobile-logout-btn"
+              >
+                🚪 Logout
+              </button>
             </>
           ) : (
             <>
-              <Link to="/login" onClick={() => setMobileOpen(false)}>Login</Link>
-              <Link to="/register" onClick={() => setMobileOpen(false)}>Register</Link>
+              <NavLink to="/login" className={navLinkClass} onClick={closeMobile}>Login</NavLink>
+              <NavLink to="/register" className={navLinkClass} onClick={closeMobile}>Register</NavLink>
             </>
           )}
         </nav>

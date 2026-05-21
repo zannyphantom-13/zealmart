@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc, updateDoc, collection } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { ArrowLeft } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadImage';
+import toast from 'react-hot-toast';
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -85,16 +86,21 @@ export default function ProductForm() {
       // 3. Save to Firestore
       if (isEditing) {
         await updateDoc(doc(db, "products", id), payload);
+        toast.success('Product updated successfully!');
       } else {
         const newRef = doc(collection(db, "products"));
         payload.createdAt = new Date();
         await setDoc(newRef, payload);
+        toast.success('Product created successfully!');
       }
 
       navigate('/admin');
     } catch (err) {
-      console.error(err);
-      setError(err.message || 'Failed to save product');
+      if (err.message && err.message.toLowerCase().includes('offline')) {
+        setError('Please check your internet connection and try again.');
+      } else {
+        setError('Failed to save product. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
@@ -143,7 +149,7 @@ export default function ProductForm() {
           <label>Product Image</label>
           <input type="file" accept="image/*" onChange={handleImageChange} style={{ padding: '0.5rem 0' }} />
           {formData.img && !imageFile && (
-            <img src={formData.img} alt="Current" style={{ width: '100px', marginTop: '0.5rem', borderRadius: '4px' }} />
+            <img src={formData.img} alt="Current" loading="lazy" decoding="async" style={{ width: '100px', marginTop: '0.5rem', borderRadius: '4px' }} />
           )}
         </div>
 

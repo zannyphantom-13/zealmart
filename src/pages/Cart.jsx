@@ -6,6 +6,7 @@ import { db } from '../firebase';
 import useCartStore from '../store/useCartStore';
 import useAuthStore from '../store/useAuthStore';
 import Footer from '../components/Footer';
+import toast from 'react-hot-toast';
 
 function fmt(n) {
   return '₦' + Math.ceil(n).toLocaleString('en-NG');
@@ -14,7 +15,7 @@ function fmt(n) {
 export default function Cart() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { items, removeFromCart, updateQuantity, getInitialPaymentTotal, clearCart } = useCartStore();
+  const { items, _hydrated, removeFromCart, updateQuantity, getInitialPaymentTotal, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,6 +26,19 @@ export default function Cart() {
     script.async = true;
     document.body.appendChild(script);
   }, []);
+
+  // Wait for Zustand to hydrate from localStorage before rendering empty cart
+  if (!_hydrated) {
+    return (
+      <main>
+        <div className="container" style={{ padding: '6rem 1rem 4rem', minHeight: '60vh', textAlign: 'center' }}>
+          <h1 style={{ marginBottom: '2rem', fontFamily: 'var(--font-display)' }}>Your Cart</h1>
+          <p style={{ color: 'var(--muted-fg)' }}>Loading cart...</p>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   const totalToPayNow = getInitialPaymentTotal();
 
@@ -66,6 +80,7 @@ export default function Cart() {
                 createdAt: new Date(),
               });
               clearCart();
+              toast.success('Order placed successfully!');
               navigate('/profile'); // Redirect to profile to see order
             } catch (err) {
               console.error("Error saving order:", err);
@@ -111,25 +126,25 @@ export default function Cart() {
         <Link to="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--muted-fg)', marginBottom: '2rem', textDecoration: 'none', fontWeight: '500' }}>
           <ArrowLeft size={16} /> Continue Shopping
         </Link>
-        
+
         <h1 style={{ marginBottom: '2rem', fontFamily: 'var(--font-display)', fontSize: '2rem' }}>Shopping Bag</h1>
 
         {error && <div style={{ color: 'red', background: '#fee2e2', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>{error}</div>}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem', lg: { gridTemplateColumns: '2fr 1fr' } }}>
-          
+
           {/* Items List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {items.map((item) => (
               <div key={item.cartItemId} style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <img src={item.img} alt={item.name} style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
-                
+                <img src={item.img} alt={item.name} loading="lazy" decoding="async" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
+
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.25rem' }}>{item.name}</h3>
                       <p style={{ color: 'var(--muted-fg)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Length: {item.length}</p>
-                      
+
                       {item.paymentChoice === 'installment' ? (
                         <div style={{ display: 'inline-block', background: 'var(--muted)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600' }}>
                           Installment: {item.installments} Months
@@ -140,19 +155,19 @@ export default function Cart() {
                         </div>
                       )}
                     </div>
-                    
+
                     <button onClick={() => removeFromCart(item.cartItemId)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }} aria-label="Remove item">
                       <Trash2 size={20} />
                     </button>
                   </div>
-                  
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)', borderRadius: '6px', padding: '0.25rem' }}>
                       <button onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} style={{ background: 'none', border: 'none', padding: '0.25rem 0.75rem', cursor: 'pointer', fontSize: '1.2rem' }}>-</button>
                       <span style={{ fontWeight: '500' }}>{item.quantity}</span>
                       <button onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} style={{ background: 'none', border: 'none', padding: '0.25rem 0.75rem', cursor: 'pointer', fontSize: '1.2rem' }}>+</button>
                     </div>
-                    
+
                     <div style={{ textAlign: 'right' }}>
                       {item.paymentChoice === 'installment' ? (
                         <>
@@ -172,7 +187,7 @@ export default function Cart() {
           <div>
             <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)', position: 'sticky', top: '100px' }}>
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>Order Summary</h2>
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: 'var(--muted-fg)' }}>
                 <span>Subtotal ({items.reduce((a, b) => a + b.quantity, 0)} items)</span>
                 <span>{fmt(totalToPayNow)}</span>
@@ -181,7 +196,7 @@ export default function Cart() {
                 <span>Shipping</span>
                 <span>Calculated at checkout</span>
               </div>
-              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', margin: '1.5rem 0', paddingTop: '1.5rem', borderTop: '1px dashed var(--border)', fontSize: '1.25rem', fontWeight: '700' }}>
                 <span>Total Due Today</span>
                 <span>{fmt(totalToPayNow)}</span>
@@ -193,21 +208,21 @@ export default function Cart() {
                 </div>
               )}
 
-              <button 
-                onClick={handleCheckout} 
+              <button
+                onClick={handleCheckout}
                 disabled={loading}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', background: 'var(--primary)', color: 'white', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
               >
                 <CreditCard size={20} />
                 {loading ? 'Processing...' : 'Pay via Korapay'}
               </button>
-              
+
               <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--muted-fg)' }}>
                 Secure checkout powered by Korapay.
               </div>
             </div>
           </div>
-          
+
         </div>
       </div>
       <Footer />

@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Star, ShieldCheck, Heart, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Star, ShieldCheck, Heart, Eye } from 'lucide-react';
 import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import Footer from '../components/Footer';
 
 export default function Home() {
   const [featured, setFeatured] = useState([]);
+  const [featLoading, setFeatLoading] = useState(true);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
@@ -22,6 +23,8 @@ export default function Home() {
         setFeatured(items);
       } catch (error) {
         console.error("Error fetching featured products:", error);
+      } finally {
+        setFeatLoading(false);
       }
     };
     fetchFeatured();
@@ -32,12 +35,11 @@ export default function Home() {
       {/* HERO SECTION */}
       <section className="hero-full">
         <div className="hero-full-bg">
-          {/* Default to the primary hero image */}
           <img src="/hero-banner.jpg" alt="JD Good Hair - Luxury Hair Extensions" />
         </div>
         <div className="hero-full-overlay" />
         <div className="hero-full-content">
-          <motion.div 
+          <motion.div
             className="hero-text-box"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -46,40 +48,26 @@ export default function Home() {
             <span className="hero-eyebrow">Luxury for Less</span>
             <h1 className="hero-h1">PREMIUM HAIR EXTENSIONS</h1>
             <p className="hero-sub">
-              Discover our curated collection of 100% virgin human hair bundles, wigs, closures & frontals.
+              Discover our curated collection of 100% virgin human hair bundles, wigs, closures &amp; frontals.
             </p>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <a href="/products" className="hero-btn primary">
-                Shop Now
-              </a>
-              <a href="/products?cat=Wigs" className="hero-btn secondary">
-                Browse Wigs
-              </a>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <a href="/products" className="hero-btn primary">Shop Now</a>
+              <a href="/products?cat=Wigs" className="hero-btn secondary">Browse Wigs</a>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* SHOP BY CATEGORY (Pill Buttons) */}
-      <section className="container" style={{ padding: '4rem 1rem 1rem' }}>
+      {/* SHOP BY CATEGORY */}
+      <section className="container" style={{ padding: '4rem 1rem 2rem' }}>
+        <p className="section-eyebrow" style={{ textAlign: 'center', marginBottom: '0.5rem' }}>Browse</p>
         <h2 style={{ fontFamily: 'var(--font-display)', textAlign: 'center', marginBottom: '2rem', fontSize: '2rem' }}>Shop by Category</h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center' }}>
           {['Bundles', 'Wigs', 'Closures', 'Frontals'].map(cat => (
-            <a 
-              key={cat} 
+            <a
+              key={cat}
               href={`/products?cat=${cat}`}
-              style={{
-                padding: '0.75rem 2rem',
-                borderRadius: '999px',
-                border: '1px solid var(--border)',
-                background: 'var(--card-bg)',
-                color: 'var(--foreground)',
-                textDecoration: 'none',
-                fontWeight: '500',
-                transition: 'all 0.3s'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--foreground)'; e.currentTarget.style.color = 'var(--background)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--card-bg)'; e.currentTarget.style.color = 'var(--foreground)'; }}
+              className="cat-pill"
             >
               {cat}
             </a>
@@ -87,66 +75,80 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED PRODUCTS (now dynamic) */}
-      {featured.length > 0 && (
-        <section className="featured-section container" style={{ paddingTop: '4rem' }}>
-          <div className="feat-header" style={{ flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '3rem' }}>
-            <span style={{ fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold', color: 'var(--muted-fg)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>CURATED SELECTION</span>
-            <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-display)', marginBottom: '1rem' }}>Featured Products</h2>
-            <a href="/products" className="view-all" style={{ textDecoration: 'none', color: 'var(--foreground)', borderBottom: '1px solid var(--foreground)', paddingBottom: '2px' }}>View All →</a>
+      {/* FEATURED PRODUCTS */}
+      <section className="featured-section container" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <p className="section-eyebrow">Curated Selection</p>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.6rem, 4vw, 2.25rem)', margin: 0 }}>
+              Featured Products
+            </h2>
           </div>
-          <div className="products-grid">
+          <a href="/products" className="view-all-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+            View All <ArrowRight size={16} />
+          </a>
+        </div>
+
+        {featLoading ? (
+          <div className="featured-grid">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="feat-card-skeleton" />
+            ))}
+          </div>
+        ) : featured.length > 0 ? (
+          <div className="featured-grid">
             {featured.map((p, i) => (
               <motion.div
                 key={p.id}
-                className="product-card"
-                onClick={() => navigate(`/products/${p.id}`)}
-                style={{ cursor: 'pointer' }}
-                initial={{ opacity: 0, y: 18 }}
+                className="feat-product-card"
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
+                transition={{ delay: i * 0.08, duration: 0.45 }}
               >
-                <Link to={`/products/${p.id}`} onClick={e => e.stopPropagation()} className="img-wrap">
-                  <img src={p.img} alt={p.name} loading="lazy" />
+                <Link to={`/products/${p.id}`} className="feat-product-img-wrap">
+                  <img src={p.img} alt={p.name} loading="lazy" decoding="async" />
                   {p.featured && <span className="feat-badge">Featured</span>}
+                  {/* Hover overlay */}
+                  <div className="feat-product-overlay">
+                    <span className="feat-overlay-btn">
+                      <Eye size={16} /> Quick View
+                    </span>
+                  </div>
                 </Link>
 
-                <div className="info">
-                  <Link to={`/products/${p.id}`} onClick={e => e.stopPropagation()}>
-                    <h3>{p.name}</h3>
+                <div className="feat-product-info">
+                  <Link to={`/products/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <h3 className="feat-product-name">{p.name}</h3>
                   </Link>
-                  {p.length && <p className="feat-length">{p.length}</p>}
-                  <div className="price">₦{Number(p.price).toLocaleString()}</div>
-
-                  <div className="card-actions">
-                    <button 
-                      className="pss-btn" 
-                      onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
-                    >Pay Small Small</button>
-                    <button 
-                      className="buy-once-btn" 
-                      onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
-                    >
-                      <ShoppingBag size={14} /> Buy Once
-                    </button>
+                  {p.length && <p className="feat-product-length">{p.length}</p>}
+                  <div className="feat-product-footer">
+                    <span className="feat-product-price">₦{Number(p.price).toLocaleString()}</span>
+                    <Link to={`/products/${p.id}`} className="feat-product-btn">
+                      View
+                    </Link>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted-fg)' }}>
+            <p>No featured products found.</p>
+            <a href="/products" className="buy-once-btn" style={{ display: 'inline-flex', marginTop: '1rem', textDecoration: 'none' }}>Browse All Products</a>
+          </div>
+        )}
+      </section>
 
       {/* FLEXIBLE PAYMENTS SECTION */}
-      <section style={{ margin: '6rem 0', padding: '6rem 1rem', background: 'linear-gradient(135deg, hsl(340 100% 98%) 0%, hsl(260 100% 98%) 100%)', textAlign: 'center' }}>
+      <section style={{ margin: '2rem 0', padding: '5rem 1rem', background: 'linear-gradient(135deg, hsl(340 100% 97%) 0%, hsl(260 100% 97%) 100%)', textAlign: 'center' }}>
         <div className="container" style={{ maxWidth: '600px' }}>
-          <span style={{ fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '1rem', display: 'block' }}>FLEXIBLE PAYMENTS</span>
-          <h2 style={{ fontSize: '3rem', fontFamily: 'var(--font-display)', marginBottom: '1.5rem', lineHeight: 1.2 }}>Pay in Installments</h2>
-          <p style={{ color: 'var(--muted-fg)', fontSize: '1.1rem', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+          <span style={{ fontSize: '0.75rem', letterSpacing: '3px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '1rem', display: 'block' }}>Flexible Payments</span>
+          <h2 style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontFamily: 'var(--font-display)', marginBottom: '1.25rem', lineHeight: 1.2 }}>Pay in Installments</h2>
+          <p style={{ color: 'var(--muted-fg)', fontSize: '1.05rem', marginBottom: '2.5rem', lineHeight: 1.7 }}>
             Get the hair you love now and pay over time. Choose from 2 to 6 month flexible payment plans with 0% interest on 2-month plans.
           </p>
-          <a href="/products" className="hero-btn primary" style={{ display: 'inline-flex', background: 'var(--primary)', color: 'white', padding: '1rem 2.5rem', borderRadius: '999px', textDecoration: 'none', fontWeight: '600', fontSize: '1.1rem', transition: 'opacity 0.3s' }}>
+          <a href="/products" className="buy-once-btn" style={{ display: 'inline-flex', fontSize: '1rem', padding: '0.85rem 2.5rem', height: 'auto', borderRadius: '999px', textDecoration: 'none' }}>
             Start Shopping
           </a>
         </div>
@@ -168,7 +170,7 @@ export default function Home() {
           <div className="value-item">
             <Heart size={32} />
             <h3>Pay Small Small</h3>
-            <p>Can't pay all at once? We offer flexible installment plans up to 30 days to make luxury accessible.</p>
+            <p>Can't pay all at once? We offer flexible installment plans up to 6 months to make luxury accessible.</p>
           </div>
         </div>
       </section>
@@ -179,14 +181,14 @@ export default function Home() {
           <div className="overlay" />
           <div className="content">
             <h3>Virgin Bundles</h3>
-            <span className="link-text">Shop Now <ArrowRight size={14}/></span>
+            <span className="link-text">Shop Now <ArrowRight size={14} /></span>
           </div>
         </a>
         <a href="/products?cat=Wigs" className="cat-card wigs">
           <div className="overlay" />
           <div className="content">
             <h3>Ready to Wear Wigs</h3>
-            <span className="link-text">Shop Now <ArrowRight size={14}/></span>
+            <span className="link-text">Shop Now <ArrowRight size={14} /></span>
           </div>
         </a>
       </section>

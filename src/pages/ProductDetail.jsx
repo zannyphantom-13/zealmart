@@ -95,7 +95,7 @@ export default function ProductDetail() {
           {/* Image */}
           <div className="pd-image-col">
             <div className="pd-img-wrap">
-              <img src={product.img} alt={product.name} />
+              <img src={product.img} alt={product.name} loading="lazy" decoding="async" />
               {product.featured && <span className="feat-badge">Featured</span>}
             </div>
           </div>

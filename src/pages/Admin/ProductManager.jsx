@@ -67,7 +67,7 @@ export default function ProductManager() {
             {products.map(product => (
               <tr key={product.id} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '0.75rem' }}>
-                  <img src={product.img} alt={product.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                  <img src={product.img} alt={product.name} loading="lazy" decoding="async" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
                 </td>
                 <td style={{ padding: '0.75rem', fontWeight: 500 }}>{product.name}</td>
                 <td style={{ padding: '0.75rem' }}>{product.category}</td>

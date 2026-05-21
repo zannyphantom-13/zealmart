@@ -1,11 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import toast from 'react-hot-toast';
 
 const useCartStore = create(
   persist(
     (set, get) => ({
       items: [],
-      
+      _hydrated: false,
+
+      setHydrated: () => set({ _hydrated: true }),
+
       addToCart: (product, quantity = 1, paymentChoice = 'full', installments = 1, monthlyPayment = 0) => {
         set((state) => {
           // Check if item exists with same payment choice
@@ -17,10 +21,12 @@ const useCartStore = create(
             // Update quantity
             const newItems = [...state.items];
             newItems[existingItemIndex].quantity += quantity;
+            toast.success('Cart updated');
             return { items: newItems };
           }
 
           // Add new item
+          toast.success('Added to cart');
           return {
             items: [
               ...state.items,
@@ -72,7 +78,7 @@ const useCartStore = create(
           }
         }, 0);
       },
-      
+
       getInitialPaymentTotal: () => {
         return get().items.reduce((total, item) => {
           if (item.paymentChoice === 'full') {
@@ -86,6 +92,9 @@ const useCartStore = create(
     }),
     {
       name: 'jd-good-hair-cart',
+      onRehydrateStorage: () => (state) => {
+        if (state) state.setHydrated();
+      },
     }
   )
 );

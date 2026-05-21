@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import Footer from '../components/Footer';
+import { Eye, EyeOff } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -16,15 +20,45 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Hardcoded check: If it's the admin, route to admin, else to shop
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Admin bypass
       if (email === 'zenobianewworld@gmail.com') {
+        toast.success('Successfully logged in!');
         navigate('/admin');
-      } else {
-        navigate('/shop');
+        return;
       }
+
+      // Check Firestore for OTP verification
+      const userDocRef = doc(db, 'users', userCredential.user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        if (userData.isEmailVerified === false) {
+          await auth.signOut();
+          setError('Please verify your email before logging in.');
+          toast.error('Please verify your email.');
+          setLoading(false);
+          // Redirect to verify-otp page with their email prefilled
+          navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
+          return;
+        }
+      }
+
+      toast.success('Successfully logged in!');
+      navigate('/shop');
     } catch (err) {
-      setError(err.message || 'Failed to sign in');
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('Invalid email or password.');
+        toast.error('Invalid email or password.');
+      } else if (err.message && err.message.toLowerCase().includes('offline')) {
+        setError('Please check your internet connection and try again.');
+        toast.error('Check your internet connection.');
+      } else {
+        setError('Failed to sign in. Please try again later.');
+        toast.error('Failed to sign in. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -40,9 +74,9 @@ export default function Login() {
           <form onSubmit={handleLogin}>
             <div className="form-group">
               <label>Email</label>
-              <input 
-                type="email" 
-                placeholder="you@example.com" 
+              <input
+                type="email"
+                placeholder="you@example.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -50,13 +84,29 @@ export default function Login() {
             </div>
             <div className="form-group">
               <label>Password</label>
-              <input 
-                type="password" 
-                placeholder="••••••••" 
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  style={{ width: '100%', paddingRight: '44px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  style={{
+                    position: 'absolute', right: '12px', top: '50%',
+                    transform: 'translateY(-50%)', background: 'none',
+                    border: 'none', cursor: 'pointer', color: '#888',
+                    display: 'flex', alignItems: 'center', padding: '2px'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <button type="submit" className="auth-submit" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
