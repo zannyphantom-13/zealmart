@@ -10,7 +10,7 @@ function fmt(n) {
   return '₦' + Math.ceil(n).toLocaleString('en-NG');
 }
 
-function PaymentBadge({ paymentChoice, installments }) {
+function PaymentBadge({ paymentChoice, installments, paymentFrequency }) {
   const isInstallment = paymentChoice === 'installment';
   return (
     <span style={{
@@ -20,7 +20,7 @@ function PaymentBadge({ paymentChoice, installments }) {
       background: isInstallment ? 'hsl(210 100% 93%)' : 'hsl(340 100% 93%)',
       color: isInstallment ? '#1d4ed8' : 'var(--primary)',
     }}>
-      {isInstallment ? `${installments}-Month Plan` : 'Full Payment'}
+      {isInstallment ? `${paymentFrequency === 'weekly' ? installments * 4 + ' Weekly Payments' : installments + ' Monthly Payments'}` : 'Full Payment'}
     </span>
   );
 }
@@ -193,10 +193,10 @@ export default function Profile() {
                                 <div style={{ fontSize: '0.78rem', color: 'var(--muted-fg)', marginBottom: '0.25rem' }}>
                                   Qty: {item.quantity} {item.length && `· Length: ${item.length}`}
                                 </div>
-                                <PaymentBadge paymentChoice={item.paymentChoice} installments={item.installments} />
-                                {item.paymentChoice === 'installment' && item.monthlyPayment && (
+                                <PaymentBadge paymentChoice={item.paymentChoice} installments={item.installments} paymentFrequency={item.paymentFrequency} />
+                                {item.paymentChoice === 'installment' && (item.periodPayment || item.monthlyPayment) && (
                                   <div style={{ fontSize: '0.72rem', color: 'var(--muted-fg)', marginTop: '0.2rem' }}>
-                                    {fmt(item.monthlyPayment)}/month
+                                    {fmt(item.periodPayment || item.monthlyPayment)}/{item.paymentFrequency === 'weekly' ? 'wk' : 'mo'}
                                   </div>
                                 )}
                               </div>

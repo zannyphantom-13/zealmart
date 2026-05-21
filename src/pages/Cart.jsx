@@ -25,6 +25,7 @@ export default function Cart() {
     phone: '',
     instructions: ''
   });
+  const [showPreview, setShowPreview] = useState(false);
 
   // Load Korapay SDK on mount
   useEffect(() => {
@@ -59,13 +60,6 @@ export default function Cart() {
     setLoading(true);
     setError('');
 
-    if (!deliveryInfo.address || !deliveryInfo.city || !deliveryInfo.state || !deliveryInfo.phone) {
-      toast.error('Please fill out all required delivery fields.');
-      setError('Please fill out all required delivery fields.');
-      setLoading(false);
-      return;
-    }
-
     // Korapay Initialization
     try {
       if (window.Korapay) {
@@ -96,6 +90,7 @@ export default function Cart() {
               });
               clearCart();
               toast.success('Order placed successfully!');
+              setShowPreview(false);
               navigate('/profile'); // Redirect to profile to see order
             } catch (err) {
               console.error("Error saving order:", err);
@@ -235,12 +230,24 @@ export default function Cart() {
               )}
 
               <button
-                onClick={handleCheckout}
+                onClick={() => {
+                  if (!user) {
+                    navigate('/login');
+                    return;
+                  }
+                  if (items.length === 0) return;
+                  if (!deliveryInfo.address || !deliveryInfo.city || !deliveryInfo.state || !deliveryInfo.phone) {
+                    toast.error('Please fill out all required delivery fields.');
+                    setError('Please fill out all required delivery fields.');
+                    return;
+                  }
+                  setError('');
+                  setShowPreview(true);
+                }}
                 disabled={loading}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', background: 'var(--primary)', color: 'white', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
               >
-                <CreditCard size={20} />
-                {loading ? 'Processing...' : 'Confirm Order'}
+                Review & Confirm Order
               </button>
 
               <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--muted-fg)' }}>
@@ -252,6 +259,58 @@ export default function Cart() {
         </div>
       </div>
       <Footer />
+
+      {/* Confirm Order Preview Modal */}
+      {showPreview && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', fontFamily: 'var(--font-display)', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>Confirm Your Order</h2>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '0.85rem', fontWeight: '700', marginBottom: '0.5rem', color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Delivery Info</h3>
+              <p style={{ fontWeight: '600', fontSize: '0.95rem' }}>{deliveryInfo.address}</p>
+              <p style={{ fontSize: '0.9rem', color: 'var(--foreground)' }}>{deliveryInfo.city}, {deliveryInfo.state}</p>
+              <p style={{ fontSize: '0.9rem', color: 'var(--foreground)' }}>Phone: {deliveryInfo.phone}</p>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '0.85rem', fontWeight: '700', marginBottom: '0.75rem', color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Order Items</h3>
+              {items.map(item => (
+                <div key={item.cartItemId} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', fontSize: '0.95rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontWeight: '600' }}>{item.quantity}×</span>
+                    <span>{item.name} <span style={{ fontSize: '0.8rem', color: 'var(--muted-fg)' }}>({item.paymentChoice === 'full' ? 'Full' : item.paymentFrequency})</span></span>
+                  </div>
+                  <span style={{ fontWeight: '600' }}>{fmt((item.paymentChoice === 'full' ? item.price : item.periodPayment || item.monthlyPayment) * item.quantity)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginBottom: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', background: 'var(--muted)', padding: '1rem', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: '700' }}>
+                <span>Total Due Today</span>
+                <span style={{ color: 'var(--primary)' }}>{fmt(totalToPayNow)}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button 
+                onClick={() => setShowPreview(false)} 
+                disabled={loading}
+                style={{ flex: 1, padding: '0.85rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', color: 'var(--foreground)' }}>
+                Cancel
+              </button>
+              <button 
+                onClick={handleCheckout} 
+                disabled={loading}
+                style={{ flex: 1, padding: '0.85rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 12px rgba(236, 72, 153, 0.2)' }}>
+                <CreditCard size={18} />
+                {loading ? 'Processing...' : 'Proceed to Pay'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
