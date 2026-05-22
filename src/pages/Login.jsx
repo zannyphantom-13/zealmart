@@ -22,7 +22,7 @@ export default function Login() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      if (email === 'zenobianewworld@gmail.com') {
+      if (email === 'zealmart.ng@gmail.com') {
         toast.success('Welcome back, Admin!');
         navigate('/admin');
         return;

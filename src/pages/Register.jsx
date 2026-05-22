@@ -60,7 +60,7 @@ export default function Register() {
         createdAt: new Date()
       });
 
-      if (formData.email === 'zenobianewworld@gmail.com') {
+      if (formData.email === 'zealmart.ng@gmail.com') {
         navigate('/admin');
       } else {
         try {

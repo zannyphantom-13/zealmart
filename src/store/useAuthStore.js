@@ -9,7 +9,7 @@ const useAuthStore = create((set) => ({
   init: () => {
     onAuthStateChanged(auth, (user) => {
       // Hardcode admin check for this specific email
-      const isAdmin = user?.email === 'zenobianewworld@gmail.com';
+      const isAdmin = user?.email === 'zealmart.ng@gmail.com';
       
       set({ 
         user, 
