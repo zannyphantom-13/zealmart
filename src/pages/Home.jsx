@@ -63,9 +63,24 @@ const DEFAULT_SLIDES = [
     }
 ];
 
+const DEFAULT_FEATURED = [
+    { id: '1', name: 'Royal 1.5HP Split Air Conditioner', price: 285000, oldPrice: 310000, category: 'Air Conditioners', brand: 'Royal', img: 'https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?w=500&q=80', tag: 'Top Seller' },
+    { id: '2', name: 'Samsung 65" Class CU7000 Crystal UHD 4K TV', price: 650000, category: 'Televisions', brand: 'Samsung', img: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80', tag: 'Official Warranty' },
+    { id: '3', name: 'Panasonic Top Load Washing Machine 10kg', price: 345000, oldPrice: 380000, category: 'Washing Machines', brand: 'Panasonic', img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500&q=80' },
+    { id: '4', name: 'Thermocool 3.5kVA Generator (Igwe)', price: 420000, category: 'Generators', brand: 'Thermocool', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80', tag: 'Fast Moving' },
+    { id: '5', name: 'LG Double Door Refrigerator 600L', price: 520000, oldPrice: 580000, category: 'Refrigerators', brand: 'LG', img: 'https://images.unsplash.com/photo-1584622614875-2f8151ecc43d?w=500&q=80', tag: 'Best Deal' },
+    { id: '6', name: 'Sony 55" Bravia XR OLED 4K TV', price: 890000, category: 'Televisions', brand: 'Sony', img: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=500&q=80', tag: 'Premium' },
+    { id: '7', name: 'Hisense 2HP Inverter Air Conditioner', price: 340000, oldPrice: 380000, category: 'Air Conditioners', brand: 'Hisense', img: 'https://images.unsplash.com/photo-1571427282427-a96fa76a01bb?w=500&q=80' },
+    { id: '8', name: 'Indesit Front Load Washing Machine 7kg', price: 285000, oldPrice: 320000, category: 'Washing Machines', brand: 'Indesit', img: 'https://images.unsplash.com/photo-1584622614875-2f8151ecc43d?w=500&q=80', tag: 'Budget Pick' },
+    { id: '9', name: 'Midea 1.5HP Portable Air Conditioner', price: 210000, category: 'Air Conditioners', brand: 'Midea', img: 'https://images.unsplash.com/photo-1567619705814-151cff786d1d?w=500&q=80' },
+    { id: '10', name: 'TCL 43" Smart TV Full HD', price: 185000, oldPrice: 220000, category: 'Televisions', brand: 'TCL', img: 'https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&q=80', tag: 'Hot Sale' },
+    { id: '11', name: 'Scanfrost Chest Freezer 500L', price: 195000, category: 'Refrigerators', brand: 'Scanfrost', img: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&q=80' },
+    { id: '12', name: 'Binatone Gas Cooker 5 Burner', price: 125000, oldPrice: 150000, category: 'Kitchen', brand: 'Binatone', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&q=80' },
+];
+
 export default function Home() {
-    const [featured, setFeatured] = useState([]);
-    const [featLoading, setFeatLoading] = useState(true);
+    const [featured, setFeatured] = useState(DEFAULT_FEATURED);
+    const [featLoading, setFeatLoading] = useState(false);
     const [slides, setSlides] = useState(DEFAULT_SLIDES);
     const [currentSlide, setCurrentSlide] = useState(0);
     const navigate = useNavigate();
@@ -89,23 +104,16 @@ export default function Home() {
                 }
 
                 // Fetch Featured
-                const q = query(collection(db, "products"), where("featured", "==", true), limit(8));
+                const q = query(collection(db, "products"), where("featured", "==", true), limit(12));
                 const snap = await getDocs(q);
                 let items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 
-                if (items.length === 0) {
-                    items = [
-                        { id: '1', name: 'Royal 1.5HP Split Air Conditioner', price: 285000, oldPrice: 310000, category: 'Air Conditioners', brand: 'Royal', img: 'https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?w=500&q=80', tag: 'Top Seller' },
-                        { id: '2', name: 'Samsung 65" Class CU7000 Crystal UHD 4K TV', price: 650000, category: 'Televisions', brand: 'Samsung', img: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80', tag: 'Official Warranty' },
-                        { id: '3', name: 'Panasonic Top Load Washing Machine 10kg', price: 345000, oldPrice: 380000, category: 'Washing Machines', brand: 'Panasonic', img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500&q=80' },
-                        { id: '4', name: 'Thermocool 3.5kVA Generator (Igwe)', price: 420000, category: 'Generators', brand: 'Thermocool', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80', tag: 'Fast Moving' },
-                    ];
+                if (items.length > 0) {
+                    setFeatured(items);
                 }
-                setFeatured(items);
             } catch (error) {
                 console.error("Error fetching data:", error);
-            } finally {
-                setFeatLoading(false);
+                setFeatured(DEFAULT_FEATURED);
             }
         };
         fetchData();
