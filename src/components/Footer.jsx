@@ -1,43 +1,75 @@
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
-  return (
-    <footer className="site-footer">
-      <div className="container footer-inner">
-        <div className="footer-grid">
-          {/* Brand */}
-          <div className="footer-brand">
-            <h3>JD Good Hair</h3>
-            <p className="footer-tagline">Luxury for Less</p>
-            <p>Premium 100% virgin human hair for every queen. Shop bundles, wigs, closures, and frontals at unbeatable prices.</p>
-          </div>
+    return (
+        <footer className="bg-zeal-dark text-gray-400 pt-16 pb-8 border-t-4 border-zeal-red mt-auto">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+                    <div className="lg:col-span-1">
+                        <Link to="/" className="inline-block mb-6">
+                            <div className="font-display text-3xl font-black tracking-tighter">
+                                <span className="text-white">ZEAL</span><span className="text-zeal-red">MART</span>
+                            </div>
+                        </Link>
+                        <p className="text-sm mb-6 leading-relaxed font-medium">
+                            Nigeria's leading distributor of premium electronics and home appliances. Official partners with global tech brands.
+                        </p>
+                        <div className="flex space-x-4">
+                            <a href="#" className="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-sm hover:bg-zeal-red hover:shadow-[0_0_10px_rgba(230,22,1,0.5)] transition-all duration-300 transform hover:-translate-y-1 text-white"><i className="fab fa-twitter"></i></a>
+                            <a href="#" className="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-sm hover:bg-zeal-red hover:shadow-[0_0_10px_rgba(230,22,1,0.5)] transition-all duration-300 transform hover:-translate-y-1 text-white"><i className="fab fa-facebook-f"></i></a>
+                            <a href="#" className="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-sm hover:bg-zeal-red hover:shadow-[0_0_10px_rgba(230,22,1,0.5)] transition-all duration-300 transform hover:-translate-y-1 text-white"><i className="fab fa-instagram"></i></a>
+                            <a href="#" className="w-10 h-10 bg-gray-800 flex items-center justify-center rounded-sm hover:bg-zeal-red hover:shadow-[0_0_10px_rgba(230,22,1,0.5)] transition-all duration-300 transform hover:-translate-y-1 text-white"><i className="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
 
-          {/* Shop */}
-          <div>
-            <h4>Shop</h4>
-            <ul>
-              <li><Link to="/shop">All Products</Link></li>
-              <li><Link to="/shop?cat=bundles">Bundles</Link></li>
-              <li><Link to="/shop?cat=wigs">Wigs</Link></li>
-              <li><Link to="/shop?cat=closures">Closures</Link></li>
-              <li><Link to="/shop?cat=frontals">Frontals</Link></li>
-            </ul>
-          </div>
+                    <div>
+                        <h4 className="text-white font-black text-sm mb-6 uppercase tracking-widest border-b border-gray-800 pb-3">Quick Links</h4>
+                        <ul className="space-y-3 text-sm font-medium">
+                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Shop Categories</Link></li>
+                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Deal of the Day</Link></li>
+                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Warranty Registration</Link></li>
+                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Track Your Order</Link></li>
+                        </ul>
+                    </div>
 
-          {/* Account */}
-          <div>
-            <h4>Account</h4>
-            <ul>
-              <li><Link to="/login">Login</Link></li>
-              <li><Link to="/register">Register</Link></li>
-            </ul>
-          </div>
-        </div>
+                    <div>
+                        <h4 className="text-white font-black text-sm mb-6 uppercase tracking-widest border-b border-gray-800 pb-3">Customer Service</h4>
+                        <ul className="space-y-3 text-sm font-medium">
+                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Contact Us</Link></li>
+                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Returns & Exchanges</Link></li>
+                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Delivery Information</Link></li>
+                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Payment Methods</Link></li>
+                        </ul>
+                    </div>
 
-        <div className="footer-bottom">
-          © 2026 JD Good Hair. All rights reserved.
-        </div>
-      </div>
-    </footer>
-  );
+                    <div>
+                        <h4 className="text-white font-black text-sm mb-6 uppercase tracking-widest border-b border-gray-800 pb-3">Head Office</h4>
+                        <ul className="space-y-4 text-sm font-medium">
+                            <li className="flex items-start">
+                                <i className="fas fa-map-marker-alt mt-1 mr-3 text-zeal-red text-lg"></i>
+                                <span>14 Electronics Avenue,<br />Victoria Island, Lagos,<br />Nigeria.</span>
+                            </li>
+                            <li className="flex items-center">
+                                <i className="fas fa-phone mr-3 text-zeal-red text-lg"></i>
+                                <span>+234 (0) 800 123 4567</span>
+                            </li>
+                            <li className="flex items-center">
+                                <i className="fas fa-envelope mr-3 text-zeal-red text-lg"></i>
+                                <span>sales@zealmart.com</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs font-medium">
+                    <p>&copy; {new Date().getFullYear()} Zealmart Limited. All Rights Reserved.</p>
+                    <div className="flex space-x-4 mt-4 md:mt-0">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Mastercard_2019_logo.svg/1200px-Mastercard_2019_logo.svg.png" alt="Mastercard" className="h-6 grayscale hover:grayscale-0 transition" />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" alt="Visa" className="h-6 grayscale hover:grayscale-0 transition" />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Verve_Image.png/800px-Verve_Image.png" alt="Verve" className="h-6 grayscale hover:grayscale-0 transition" />
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
 }

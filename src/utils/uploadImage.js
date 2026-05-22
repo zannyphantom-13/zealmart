@@ -1,5 +1,5 @@
-const CLOUD_NAME = "djd5ygwf7";
-const UPLOAD_PRESET = "jd-good-hair";
+const CLOUD_NAME = "dttfict76";
+const UPLOAD_PRESET = "zealmart";
 
 export const uploadImage = async (file) => {
   const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;

@@ -1,199 +1,352 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Star, ShieldCheck, Heart, Eye } from 'lucide-react';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Footer from '../components/Footer';
 
+const DEFAULT_SLIDES = [
+    {
+        id: 1,
+        title: "Upgrade Your Living Space",
+        subtitle: "Premium Air Conditioners, Televisions, and Home Appliances from world-class brands.",
+        buttonText: "Shop Appliances",
+        link: "/products",
+        image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=1920&q=80"
+    },
+    {
+        id: 2,
+        title: "Massive TV Clearance",
+        subtitle: "Get up to 30% off on Smart 4K UHD Televisions.",
+        buttonText: "View TV Deals",
+        link: "/products?cat=Televisions",
+        image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=1920&q=80"
+    },
+    {
+        id: 3,
+        title: "Beat the Heat",
+        subtitle: "Inverter ACs built for maximum cooling and low energy consumption.",
+        buttonText: "Shop Air Conditioners",
+        link: "/products?cat=Air%20Conditioners",
+        image: "https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?auto=format&fit=crop&w=1920&q=80"
+    },
+    {
+        id: 4,
+        title: "Power Your Home",
+        subtitle: "Reliable generators and solar solutions for uninterrupted power.",
+        buttonText: "Explore Generators",
+        link: "/products?cat=Generators",
+        image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80"
+    },
+    {
+        id: 5,
+        title: "Modern Kitchen Essentials",
+        subtitle: "Double door refrigerators and chest freezers.",
+        buttonText: "Shop Refrigerators",
+        link: "/products?cat=Refrigerators",
+        image: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&w=1920&q=80"
+    },
+    {
+        id: 6,
+        title: "Laundry Made Easy",
+        subtitle: "Top load and front load washing machines.",
+        buttonText: "Shop Washing Machines",
+        link: "/products?cat=Washing%20Machines",
+        image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=1920&q=80"
+    },
+    {
+        id: 7,
+        title: "Next-Gen Gaming & Audio",
+        subtitle: "Consoles, soundbars, and home theater systems.",
+        buttonText: "Discover Gaming",
+        link: "/products?cat=Gaming",
+        image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=1920&q=80"
+    }
+];
+
 export default function Home() {
-  const [featured, setFeatured] = useState([]);
-  const [featLoading, setFeatLoading] = useState(true);
-  const navigate = useNavigate();
+    const [featured, setFeatured] = useState([]);
+    const [featLoading, setFeatLoading] = useState(true);
+    const [slides, setSlides] = useState(DEFAULT_SLIDES);
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchFeatured = async () => {
-      try {
-        const q = query(collection(db, "products"), where("featured", "==", true), limit(4));
-        const querySnapshot = await getDocs(q);
-        const items = [];
-        querySnapshot.forEach((doc) => {
-          items.push({ id: doc.id, ...doc.data() });
-        });
-        setFeatured(items);
-      } catch (error) {
-        console.error("Error fetching featured products:", error);
-      } finally {
-        setFeatLoading(false);
-      }
-    };
-    fetchFeatured();
-  }, []);
+    // Auto-advance carousel
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+        }, 6000);
+        return () => clearInterval(timer);
+    }, [slides.length]);
 
-  return (
-    <main>
-      {/* HERO SECTION */}
-      <section className="hero-full">
-        <div className="hero-full-bg">
-          <img src="/hero-banner.jpg" alt="JD Good Hair - Luxury Hair Extensions" />
-        </div>
-        <div className="hero-full-overlay" />
-        <div className="hero-full-content">
-          <motion.div
-            className="hero-text-box"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <span className="hero-eyebrow">Luxury for Less</span>
-            <h1 className="hero-h1">PREMIUM HAIR EXTENSIONS</h1>
-            <p className="hero-sub">
-              Discover our curated collection of 100% virgin human hair bundles, wigs, closures &amp; frontals.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <a href="/products" className="hero-btn primary">Shop Now</a>
-              <a href="/products?cat=Wigs" className="hero-btn secondary">Browse Wigs</a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+    // Fetch featured products & settings
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch Settings (Carousel)
+                const settingsSnap = await getDoc(doc(db, 'settings', 'site_settings'));
+                if (settingsSnap.exists() && settingsSnap.data().heroSlides && settingsSnap.data().heroSlides.length > 0) {
+                    setSlides(settingsSnap.data().heroSlides);
+                }
 
-      {/* SHOP BY CATEGORY */}
-      <section className="container" style={{ padding: '4rem 1rem 2rem' }}>
-        <p className="section-eyebrow" style={{ textAlign: 'center', marginBottom: '0.5rem' }}>Browse</p>
-        <h2 style={{ fontFamily: 'var(--font-display)', textAlign: 'center', marginBottom: '2rem', fontSize: '2rem' }}>Shop by Category</h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center' }}>
-          {['Bundles', 'Wigs', 'Closures', 'Frontals'].map(cat => (
-            <a
-              key={cat}
-              href={`/products?cat=${cat}`}
-              className="cat-pill"
-            >
-              {cat}
+                // Fetch Featured
+                const q = query(collection(db, "products"), where("featured", "==", true), limit(8));
+                const snap = await getDocs(q);
+                let items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                
+                if (items.length === 0) {
+                    items = [
+                        { id: '1', name: 'Royal 1.5HP Split Air Conditioner', price: 285000, oldPrice: 310000, category: 'Air Conditioners', brand: 'Royal', img: 'https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?w=500&q=80', tag: 'Top Seller' },
+                        { id: '2', name: 'Samsung 65" Class CU7000 Crystal UHD 4K TV', price: 650000, category: 'Televisions', brand: 'Samsung', img: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80', tag: 'Official Warranty' },
+                        { id: '3', name: 'Panasonic Top Load Washing Machine 10kg', price: 345000, oldPrice: 380000, category: 'Washing Machines', brand: 'Panasonic', img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500&q=80' },
+                        { id: '4', name: 'Thermocool 3.5kVA Generator (Igwe)', price: 420000, category: 'Generators', brand: 'Thermocool', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80', tag: 'Fast Moving' },
+                    ];
+                }
+                setFeatured(items);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                setFeatLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const brands = [
+        { name: 'Samsung', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg' },
+        { name: 'LG', logo: 'https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg' },
+        { name: 'Panasonic', logo: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/Panasonic_logo.svg' },
+        { name: 'Sony', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg' },
+        { name: 'Hisense', logo: 'https://upload.wikimedia.org/wikipedia/commons/d/dd/Hisense_logo.svg' },
+        { name: 'TCL', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/TCL_logo.svg' }
+    ];
+
+    return (
+        <main className="bg-gray-50 flex-grow">
+            
+            {/* WhatsApp Floating Button */}
+            <a href="https://wa.me/2340000000000" target="_blank" rel="noreferrer"
+                className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transform hover:scale-110 transition-transform duration-300">
+                <i className="fab fa-whatsapp text-3xl"></i>
             </a>
-          ))}
-        </div>
-      </section>
 
-      {/* FEATURED PRODUCTS */}
-      <section className="featured-section container" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <p className="section-eyebrow">Curated Selection</p>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.6rem, 4vw, 2.25rem)', margin: 0 }}>
-              Featured Products
-            </h2>
-          </div>
-          <a href="/products" className="view-all-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-            View All <ArrowRight size={16} />
-          </a>
-        </div>
+            {/* Giant 7-Slide Hero Carousel */}
+            <div className="relative bg-zeal-dark text-white overflow-hidden h-[500px] md:h-[600px] group">
+                {slides.map((slide, index) => (
+                    <div 
+                        key={index}
+                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                    >
+                        <img 
+                            src={slide.image} 
+                            alt={slide.title} 
+                            className={`absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50 transform transition-transform duration-[10000ms] ${index === currentSlide ? 'scale-110' : 'scale-100'}`} 
+                        />
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full relative z-20 flex flex-col justify-center">
+                            <div className="max-w-2xl transform transition-all duration-1000 translate-y-0 opacity-100">
+                                <span className="inline-block bg-zeal-red text-white text-xs font-black uppercase tracking-widest px-3 py-1 mb-4 border border-red-500 animate-fade-in-up">
+                                    Authorized Dealer
+                                </span>
+                                <h1 className="text-5xl md:text-7xl font-display font-black leading-tight mb-4 text-white uppercase tracking-tight drop-shadow-lg animate-fade-in-up" style={{animationDelay: '100ms'}}>
+                                    {slide.title}
+                                </h1>
+                                <p className="text-lg md:text-xl text-gray-200 mb-8 font-medium drop-shadow animate-fade-in-up" style={{animationDelay: '200ms'}}>
+                                    {slide.subtitle}
+                                </p>
+                                <div className="animate-fade-in-up" style={{animationDelay: '300ms'}}>
+                                    <Link 
+                                        to={slide.link} 
+                                        className="inline-block bg-zeal-red hover:bg-white hover:text-zeal-red border-2 border-transparent hover:border-zeal-red text-white font-bold py-4 px-10 rounded-sm transition-all duration-300 flex-none shadow-[0_0_15px_rgba(230,22,1,0.5)] hover:shadow-[0_0_25px_rgba(230,22,1,0.8)] uppercase tracking-wide transform hover:-translate-y-1"
+                                    >
+                                        {slide.buttonText} <i className="fas fa-chevron-right ml-2 text-xs"></i>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                
+                {/* Carousel Controls */}
+                <button 
+                    onClick={() => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1))}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-zeal-red text-white w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
+                >
+                    <i className="fas fa-chevron-left"></i>
+                </button>
+                <button 
+                    onClick={() => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-zeal-red text-white w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
+                >
+                    <i className="fas fa-chevron-right"></i>
+                </button>
 
-        {featLoading ? (
-          <div className="featured-grid">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="feat-card-skeleton" />
-            ))}
-          </div>
-        ) : featured.length > 0 ? (
-          <div className="featured-grid">
-            {featured.map((p, i) => (
-              <motion.div
-                key={p.id}
-                className="feat-product-card"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: i * 0.08, duration: 0.45 }}
-              >
-                <Link to={`/products/${p.id}`} className="feat-product-img-wrap">
-                  <img src={p.img} alt={p.name} loading="lazy" decoding="async" />
-                  {p.featured && <span className="feat-badge">Featured</span>}
-                  {/* Hover overlay */}
-                  <div className="feat-product-overlay">
-                    <span className="feat-overlay-btn">
-                      <Eye size={16} /> Quick View
-                    </span>
-                  </div>
-                </Link>
-
-                <div className="feat-product-info">
-                  <Link to={`/products/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <h3 className="feat-product-name">{p.name}</h3>
-                  </Link>
-                  {p.length && <p className="feat-product-length">{p.length}</p>}
-                  <div className="feat-product-footer">
-                    <span className="feat-product-price">₦{Number(p.price).toLocaleString()}</span>
-                    <Link to={`/products/${p.id}`} className="feat-product-btn">
-                      View
-                    </Link>
-                  </div>
+                {/* Carousel Indicators */}
+                <div className="absolute bottom-6 left-0 right-0 z-30 flex justify-center space-x-2">
+                    {slides.map((_, idx) => (
+                        <button 
+                            key={idx}
+                            onClick={() => setCurrentSlide(idx)}
+                            className={`h-2 transition-all duration-300 rounded-full ${idx === currentSlide ? 'w-8 bg-zeal-red' : 'w-2 bg-white/50'}`}
+                        />
+                    ))}
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted-fg)' }}>
-            <p>No featured products found.</p>
-            <a href="/products" className="buy-once-btn" style={{ display: 'inline-flex', marginTop: '1rem', textDecoration: 'none' }}>Browse All Products</a>
-          </div>
-        )}
-      </section>
+            </div>
 
-      {/* FLEXIBLE PAYMENTS SECTION */}
-      <section style={{ margin: '2rem 0', padding: '5rem 1rem', background: 'linear-gradient(135deg, hsl(340 100% 97%) 0%, hsl(260 100% 97%) 100%)', textAlign: 'center' }}>
-        <div className="container" style={{ maxWidth: '600px' }}>
-          <span style={{ fontSize: '0.75rem', letterSpacing: '3px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '1rem', display: 'block' }}>Flexible Payments</span>
-          <h2 style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontFamily: 'var(--font-display)', marginBottom: '1.25rem', lineHeight: 1.2 }}>Pay in Installments</h2>
-          <p style={{ color: 'var(--muted-fg)', fontSize: '1.05rem', marginBottom: '2.5rem', lineHeight: 1.7 }}>
-            Get the hair you love now and pay over time. Choose from 2 to 6 month flexible payment plans with 0% interest on 2-month plans.
-          </p>
-          <a href="/products" className="buy-once-btn" style={{ display: 'inline-flex', fontSize: '1rem', padding: '0.85rem 2.5rem', height: 'auto', borderRadius: '999px', textDecoration: 'none' }}>
-            Start Shopping
-          </a>
-        </div>
-      </section>
+            {/* Brand Carousel Section */}
+            <div className="bg-white border-b border-gray-200 py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <h3 className="text-center text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Official Partners & Distributors Of</h3>
+                    <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+                        {brands.map((b, i) => (
+                            <img key={i} src={b.logo} alt={b.name} className="h-6 md:h-8 object-contain transition-all hover:scale-110" />
+                        ))}
+                    </div>
+                </div>
+            </div>
 
-      {/* VALUE PROPS */}
-      <section className="values-section">
-        <div className="container values-grid">
-          <div className="value-item">
-            <Star size={32} />
-            <h3>Premium Grade</h3>
-            <p>Sourced from the finest donors. Double drawn, full to the ends, and built to last years with proper care.</p>
-          </div>
-          <div className="value-item">
-            <ShieldCheck size={32} />
-            <h3>Quality Guaranteed</h3>
-            <p>Every bundle undergoes a rigorous 5-step quality inspection before it reaches your hands.</p>
-          </div>
-          <div className="value-item">
-            <Heart size={32} />
-            <h3>Pay Small Small</h3>
-            <p>Can't pay all at once? We offer flexible installment plans up to 6 months to make luxury accessible.</p>
-          </div>
-        </div>
-      </section>
+            {/* Highlighted Categories */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Link to="/products?cat=Air%20Conditioners" className="group relative h-64 bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1628135544717-3ba0a108a715?w=500&q=80" alt="ACs" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                        <div className="absolute bottom-0 left-0 w-full p-6 z-20">
+                            <span className="text-zeal-red font-bold text-sm uppercase tracking-wider block mb-1">Cooling</span>
+                            <h3 className="text-white font-display font-black text-2xl uppercase">Air Conditioners</h3>
+                            <span className="text-white text-sm font-medium mt-2 inline-flex items-center group-hover:text-zeal-red transition-colors">
+                                Shop Now <i className="fas fa-arrow-right ml-2 text-xs transition-transform group-hover:translate-x-2"></i>
+                            </span>
+                        </div>
+                    </Link>
+                    
+                    <Link to="/products?cat=Televisions" className="group relative h-64 bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&q=80" alt="TVs" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                        <div className="absolute bottom-0 left-0 w-full p-6 z-20">
+                            <span className="text-zeal-red font-bold text-sm uppercase tracking-wider block mb-1">Entertainment</span>
+                            <h3 className="text-white font-display font-black text-2xl uppercase">Televisions</h3>
+                            <span className="text-white text-sm font-medium mt-2 inline-flex items-center group-hover:text-zeal-red transition-colors">
+                                Shop Now <i className="fas fa-arrow-right ml-2 text-xs transition-transform group-hover:translate-x-2"></i>
+                            </span>
+                        </div>
+                    </Link>
 
-      {/* CATEGORY BANNER */}
-      <section className="categories-banner container">
-        <a href="/products?cat=Bundles" className="cat-card bundles">
-          <div className="overlay" />
-          <div className="content">
-            <h3>Virgin Bundles</h3>
-            <span className="link-text">Shop Now <ArrowRight size={14} /></span>
-          </div>
-        </a>
-        <a href="/products?cat=Wigs" className="cat-card wigs">
-          <div className="overlay" />
-          <div className="content">
-            <h3>Ready to Wear Wigs</h3>
-            <span className="link-text">Shop Now <ArrowRight size={14} /></span>
-          </div>
-        </a>
-      </section>
+                    <Link to="/products?cat=Refrigerators" className="group relative h-64 bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=500&q=80" alt="Refrigerators" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                        <div className="absolute bottom-0 left-0 w-full p-6 z-20">
+                            <span className="text-zeal-red font-bold text-sm uppercase tracking-wider block mb-1">Kitchen</span>
+                            <h3 className="text-white font-display font-black text-2xl uppercase">Refrigerators</h3>
+                            <span className="text-white text-sm font-medium mt-2 inline-flex items-center group-hover:text-zeal-red transition-colors">
+                                Shop Now <i className="fas fa-arrow-right ml-2 text-xs transition-transform group-hover:translate-x-2"></i>
+                            </span>
+                        </div>
+                    </Link>
+                </div>
+            </div>
 
-      <Footer />
-    </main>
-  );
+            {/* Best Sellers Grid */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-12">
+                <div className="flex justify-between items-end border-b-2 border-zeal-blue pb-3 mb-6">
+                    <h2 className="text-2xl font-display font-black text-gray-900 uppercase tracking-tight">Best Selling Appliances</h2>
+                    <Link to="/products" className="text-zeal-red hover:text-red-800 font-bold text-sm uppercase tracking-wider hidden sm:block group">
+                        View All <i className="fas fa-arrow-right ml-1 transition-transform group-hover:translate-x-1"></i>
+                    </Link>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {featLoading ? (
+                        [1, 2, 3, 4].map(i => (
+                            <div key={i} className="bg-white p-4 rounded border border-gray-200 h-80 animate-pulse flex flex-col justify-between">
+                                <div className="w-full h-40 bg-gray-100 mb-4"></div>
+                                <div className="h-4 bg-gray-100 w-3/4 mb-2"></div>
+                                <div className="h-8 bg-gray-100 w-1/2 mt-auto"></div>
+                            </div>
+                        ))
+                    ) : (
+                        featured.map((p, idx) => (
+                            <div key={p.id} 
+                                onClick={() => navigate(`/products/${p.id}`)}
+                                className="product-card-container relative group cursor-pointer flex flex-col h-full rounded bg-white overflow-hidden animate-fade-in-up"
+                                style={{animationDelay: `${idx * 100}ms`}}
+                            >
+                                {p.tag && (
+                                    <div className="absolute top-2 left-2 z-10 bg-zeal-red text-white text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-wider animate-pulse">
+                                        {p.tag}
+                                    </div>
+                                )}
+                                
+                                <div className="relative p-4 h-56 flex items-center justify-center border-b border-gray-100 bg-white overflow-hidden">
+                                    <img src={p.img} alt={p.name} className="max-w-full max-h-full object-contain transform group-hover:scale-110 transition-transform duration-500" />
+                                </div>
+                                
+                                <div className="p-4 flex flex-col flex-grow">
+                                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                        {p.brand || p.category}
+                                    </p>
+                                    <h3 className="text-[13px] font-bold text-gray-800 leading-snug line-clamp-2 mb-3 group-hover:text-zeal-blue transition-colors">
+                                        {p.name}
+                                    </h3>
+                                    
+                                    <div className="mt-auto">
+                                        <div className="mb-3">
+                                            <span className="text-xl font-display font-black text-zeal-red block">
+                                                ₦{Number(p.price).toLocaleString()}
+                                            </span>
+                                            {p.oldPrice && (
+                                                <span className="text-xs text-gray-400 line-through font-medium">
+                                                    ₦{Number(p.oldPrice).toLocaleString()}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
+                                            className="w-full bg-white border border-zeal-blue text-zeal-blue hover:bg-zeal-blue hover:text-white font-bold py-2.5 rounded-sm text-sm transition-all duration-300 flex justify-center items-center gap-2 uppercase tracking-wide group-hover:shadow-md transform group-hover:-translate-y-1"
+                                        >
+                                            <i className="fas fa-shopping-cart"></i> Add To Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+
+            {/* Newsletter/Trust Section */}
+            <div className="bg-zeal-gray border-t border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                        <div>
+                            <h3 className="text-2xl font-display font-black uppercase text-gray-900 mb-2">Join The Zealmart Family</h3>
+                            <p className="text-gray-600 mb-6 font-medium">Subscribe to receive updates, access to exclusive deals, and more.</p>
+                            <form className="flex w-full max-w-md group">
+                                <input type="email" placeholder="Enter your email address" className="flex-1 py-3 px-4 border border-gray-300 rounded-l outline-none focus:border-zeal-blue transition-colors" />
+                                <button type="submit" className="bg-zeal-red text-white px-6 font-bold uppercase rounded-r hover:bg-red-800 transition-colors shadow-md group-hover:shadow-lg">
+                                    Subscribe
+                                </button>
+                            </form>
+                        </div>
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="flex items-start gap-4 transform transition-transform hover:-translate-y-1">
+                                <i className="fas fa-shield-alt text-3xl text-zeal-blue"></i>
+                                <div>
+                                    <h4 className="font-bold text-gray-900 uppercase text-sm">Secure Payment</h4>
+                                    <p className="text-xs text-gray-500 mt-1">100% secure payment with Paystack & Flutterwave.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4 transform transition-transform hover:-translate-y-1">
+                                <i className="fas fa-headset text-3xl text-zeal-blue"></i>
+                                <div>
+                                    <h4 className="font-bold text-gray-900 uppercase text-sm">24/7 Support</h4>
+                                    <p className="text-xs text-gray-500 mt-1">Dedicated support via calls & WhatsApp.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <Footer />
+        </main>
+    );
 }

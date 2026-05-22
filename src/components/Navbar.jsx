@@ -1,155 +1,212 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Search, ShoppingBag, Menu, X, User, LogOut, Shield } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import useAuthStore from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
 import toast from 'react-hot-toast';
-import './Navbar.css';
 
 export default function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, isAdmin, logout } = useAuthStore();
-  const { getTotalItems } = useCartStore();
+    const [search, setSearch] = useState('');
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [tickerText, setTickerText] = useState('⚡ Best Deals on Electronics & Home Appliances — Limited Offers, Shop Now! 🚚 Enjoy Fast Delivery Across Lagos — Free Shipping on Orders From ₦999,999.99!');
+    const { user, isAdmin, logout } = useAuthStore();
+    const { getTotalItems } = useCartStore();
+    const navigate = useNavigate();
 
-  const closeMobile = () => setMobileOpen(false);
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const docRef = doc(db, 'settings', 'site_settings');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists() && docSnap.data().tickerMessages) {
+                    // Join multiple messages with spaces
+                    setTickerText(docSnap.data().tickerMessages.join('     |     '));
+                }
+            } catch (error) {
+                console.error("Error fetching ticker settings:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (search.trim()) navigate(`/products?search=${encodeURIComponent(search)}`);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
-  useEffect(() => {
-    closeMobile();
-  }, [location]);
+    const handleLogout = async () => {
+        await logout();
+        toast.success('Signed out successfully');
+    };
 
-  const handleLogout = async () => {
-    await logout();
-    toast.success('Signed out successfully');
-    navigate('/');
-    closeMobile();
-  };
+    return (
+        <header className="bg-white">
+            {/* Animated Ticker Tape */}
+            <div className="bg-zeal-red text-white py-1 overflow-hidden whitespace-nowrap relative flex items-center">
+                <div className="animate-marquee inline-block font-bold text-xs uppercase tracking-widest whitespace-nowrap">
+                    {tickerText} &nbsp;&nbsp;&nbsp;&nbsp; {tickerText}
+                </div>
+            </div>
 
-  const totalItems = getTotalItems();
+            {/* Top Info Bar */}
+            <div className="bg-zeal-gray border-b border-gray-200 py-1.5 hidden md:block">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center text-[11px] text-gray-600 font-medium">
+                    <div className="flex space-x-6">
+                        <span><i className="fas fa-phone text-zeal-red mr-1"></i> +234 800 123 4567</span>
+                        <span><i className="fas fa-envelope text-zeal-red mr-1"></i> sales@zealmart.com</span>
+                    </div>
+                    <div className="flex space-x-6">
+                        <span><i className="fas fa-truck text-zeal-red mr-1"></i> Nationwide Delivery</span>
+                        <span><i className="fas fa-shield-alt text-zeal-red mr-1"></i> 100% Authentic Brands</span>
+                    </div>
+                </div>
+            </div>
 
-  const navLinkClass = ({ isActive }) =>
-    isActive ? 'mobile-nav-link active' : 'mobile-nav-link';
+            {/* Main Header */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                <div className="flex items-center justify-between gap-6">
+                    {/* Logo */}
+                    <Link to="/" className="flex-shrink-0">
+                        <div className="font-display text-3xl font-black tracking-tighter hover:scale-105 transition-transform duration-300">
+                            <span className="text-zeal-blue">ZEAL</span><span className="text-zeal-red">MART</span>
+                        </div>
+                    </Link>
 
-  return (
-    <>
-      <header className={`site-header ${scrolled ? 'scrolled' : ''}`}>
-        <div className="container header-inner">
-          {/* Left Logo */}
-          <NavLink to="/" className="header-logo" onClick={closeMobile}>
-            <img src="/logo.png" alt="JD Good Hair Logo" />
-          </NavLink>
+                    {/* Search Bar - Desktop */}
+                    <div className="hidden md:block flex-1 max-w-2xl">
+                        <form onSubmit={handleSearch} className="flex w-full border-2 border-zeal-blue rounded overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                            <input 
+                                type="text" 
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full py-2.5 px-4 outline-none text-sm text-gray-800 placeholder-gray-400" 
+                                placeholder="Search for TVs, Air Conditioners, Laptops, Generators..." 
+                            />
+                            <button type="submit" className="bg-zeal-blue text-white px-8 font-bold hover:bg-blue-900 transition flex items-center justify-center">
+                                SEARCH
+                            </button>
+                        </form>
+                    </div>
 
-          {/* Center Desktop Nav */}
-          <nav className="header-nav desktop-only">
-            <NavLink to="/" end className="nav-item">Home</NavLink>
-            <NavLink to="/products" className="nav-item">Shop</NavLink>
-            <NavLink to="/products?category=Bundles" className="nav-item">Bundles</NavLink>
-            <NavLink to="/products?category=Wigs" className="nav-item">Wigs</NavLink>
-          </nav>
+                    {/* Actions - Desktop */}
+                    <div className="hidden md:flex items-center gap-6">
+                        {user ? (
+                            <div className="flex items-center gap-4">
+                                <Link to="/profile" className="flex items-center gap-2 text-gray-700 hover:text-zeal-red transition group">
+                                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 group-hover:border-zeal-red transition-all duration-300 group-hover:-translate-y-1">
+                                        <i className="fas fa-user text-lg"></i>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] text-gray-500 font-bold uppercase">Account</span>
+                                        <span className="text-sm font-bold">Hi, {user.email?.split('@')[0] || 'User'}</span>
+                                    </div>
+                                </Link>
+                                {isAdmin && (
+                                    <Link to="/admin" className="text-sm font-bold text-zeal-blue hover:text-zeal-red transition-colors"><i className="fas fa-cog"></i> Admin</Link>
+                                )}
+                                <button onClick={handleLogout} className="text-sm font-bold text-gray-500 hover:text-zeal-red transition-colors">Logout</button>
+                            </div>
+                        ) : (
+                            <Link to="/login" className="flex items-center gap-2 text-gray-700 hover:text-zeal-red transition group">
+                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 group-hover:border-zeal-red transition-all duration-300 group-hover:-translate-y-1">
+                                    <i className="fas fa-user text-lg"></i>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[11px] text-gray-500 font-bold uppercase">Sign In</span>
+                                    <span className="text-sm font-bold">Account</span>
+                                </div>
+                            </Link>
+                        )}
 
-          {/* Center Mobile Search Bar */}
-          <div className="mobile-search-wrapper mobile-only">
-            <NavLink to="/products" className="mobile-search-bar">
-              <Search size={16} strokeWidth={2} />
-              <span>Search...</span>
-            </NavLink>
-          </div>
+                        <Link to="/cart" className="flex items-center gap-2 text-gray-700 hover:text-zeal-red transition group">
+                            <div className="relative">
+                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 group-hover:border-zeal-red transition-all duration-300 group-hover:-translate-y-1">
+                                    <i className="fas fa-shopping-cart text-lg"></i>
+                                </div>
+                                <span className="absolute -top-1 -right-1 bg-zeal-red text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                                    {getTotalItems()}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] text-gray-500 font-bold uppercase">My Cart</span>
+                                <span className="text-sm font-bold">₦0.00</span>
+                            </div>
+                        </Link>
+                    </div>
 
-          {/* Right Actions */}
-          <div className="header-actions">
-            <NavLink to="/products" aria-label="Search" className="action-icon desktop-only">
-              <Search size={20} strokeWidth={1.5} />
-            </NavLink>
+                    {/* Mobile Toggles */}
+                    <div className="flex md:hidden items-center gap-4">
+                        <Link to="/cart" className="relative text-gray-800">
+                            <i className="fas fa-shopping-cart text-2xl"></i>
+                            <span className="absolute -top-2 -right-2 bg-zeal-red text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                                {getTotalItems()}
+                            </span>
+                        </Link>
+                        <button onClick={() => setMobileOpen(!mobileOpen)} className="text-gray-800 text-2xl">
+                            <i className={`fas ${mobileOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                        </button>
+                    </div>
+                </div>
 
-            {user ? (
-              <div className="user-actions desktop-only">
-                {isAdmin && (
-                  <NavLink to="/admin" className="action-icon" title="Admin Portal">
-                    <Shield size={20} strokeWidth={1.5} />
-                  </NavLink>
-                )}
-                <NavLink to="/profile" className="action-icon" title="Profile">
-                  <User size={20} strokeWidth={1.5} />
-                </NavLink>
-                <button onClick={handleLogout} className="action-icon" title="Logout">
-                  <LogOut size={20} strokeWidth={1.5} />
-                </button>
-              </div>
-            ) : (
-              <div className="auth-actions desktop-only">
-                <NavLink to="/login" className="auth-link">Login</NavLink>
-                <NavLink to="/register" className="auth-btn">Register</NavLink>
-              </div>
+                {/* Mobile Search */}
+                <div className="mt-4 md:hidden">
+                    <form onSubmit={handleSearch} className="flex w-full border-2 border-zeal-blue rounded overflow-hidden">
+                        <input 
+                            type="text" 
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full py-2.5 px-3 outline-none text-sm" 
+                            placeholder="Search products..." 
+                        />
+                        <button type="submit" className="bg-zeal-blue text-white px-5 font-bold">
+                            <i className="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {/* Navigation Categories */}
+            <div className="bg-zeal-blue text-white shadow-md relative z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex md:space-x-8 overflow-x-auto whitespace-nowrap hide-scrollbar">
+                        <Link to="/products" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide flex items-center uppercase transition-all">
+                            <i className="fas fa-list mr-2"></i> All Categories
+                        </Link>
+                        <Link to="/products?cat=Air%20Conditioners" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Air Conditioners</Link>
+                        <Link to="/products?cat=Televisions" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Televisions</Link>
+                        <Link to="/products?cat=Refrigerators" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Refrigerators</Link>
+                        <Link to="/products?cat=Generators" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Generators</Link>
+                        <Link to="/products?cat=Washing%20Machines" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Washing Machines</Link>
+                        <Link to="/products?cat=Phones" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Phones & Tablets</Link>
+                        
+                        <Link to="/products" className="py-3 px-2 ml-auto text-yellow-400 hover:text-white font-black text-sm tracking-wide flex items-center uppercase transition-all group">
+                            <i className="fas fa-fire mr-1 group-hover:animate-bounce"></i> Hot Deals
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Menu Dropdown */}
+            {mobileOpen && (
+                <div className="md:hidden bg-white border-b shadow-lg absolute w-full z-50">
+                    <div className="p-4 flex flex-col gap-4">
+                        <div className="grid grid-cols-2 gap-3 pb-4 border-b border-gray-100">
+                            {user ? (
+                                <>
+                                    <Link to="/profile" className="text-center border-2 border-zeal-blue text-zeal-blue py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Account</Link>
+                                    <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-center bg-zeal-red text-white py-2.5 rounded font-bold">Logout</button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="text-center border-2 border-zeal-blue text-zeal-blue py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Login</Link>
+                                    <Link to="/register" className="text-center bg-zeal-red text-white py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Register</Link>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
-
-            <NavLink to="/cart" className="action-icon cart-action" aria-label="Cart">
-              <ShoppingBag size={20} strokeWidth={1.5} />
-              {totalItems > 0 && (
-                <span className="cart-badge">{totalItems}</span>
-              )}
-            </NavLink>
-
-            {/* Mobile menu button */}
-            <button
-              className="mobile-menu-btn"
-              aria-label={mobileOpen ? 'Close menu' : 'Menu'}
-              onClick={() => setMobileOpen(v => !v)}
-            >
-              {mobileOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Drawer Overlay */}
-      <div className={`mobile-drawer-overlay ${mobileOpen ? 'open' : ''}`} onClick={closeMobile}></div>
-
-      {/* Mobile Drawer */}
-      <div className={`mobile-drawer ${mobileOpen ? 'open' : ''}`}>
-        <div className="drawer-header">
-          <img src="/logo.png" alt="JD Good Hair Logo" className="drawer-logo" />
-          <button className="drawer-close" onClick={closeMobile}>
-            <X size={20} />
-          </button>
-        </div>
-        <div className="drawer-content">
-          <nav className="mobile-nav-list">
-            <NavLink to="/" end className={navLinkClass}>Home</NavLink>
-            <NavLink to="/products" className={navLinkClass}>Shop All</NavLink>
-            <NavLink to="/products?category=Bundles" className={navLinkClass}>Bundles</NavLink>
-            <NavLink to="/products?category=Wigs" className={navLinkClass}>Wigs</NavLink>
-            <NavLink to="/products?category=Closures" className={navLinkClass}>Closures</NavLink>
-            <NavLink to="/products?category=Frontals" className={navLinkClass}>Frontals</NavLink>
-          </nav>
-
-          <div className="drawer-footer">
-            {user ? (
-              <div className="mobile-user-menu">
-                {isAdmin && (
-                  <NavLink to="/admin" className="drawer-btn outline">⚙️ Admin Portal</NavLink>
-                )}
-                <NavLink to="/profile" className="drawer-btn outline">👤 Profile</NavLink>
-                <button onClick={handleLogout} className="drawer-btn danger">🚪 Logout</button>
-              </div>
-            ) : (
-              <div className="mobile-auth-menu">
-                <NavLink to="/login" className="drawer-btn outline">Login</NavLink>
-                <NavLink to="/register" className="drawer-btn primary">Register</NavLink>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  );
+        </header>
+    );
 }

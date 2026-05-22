@@ -61,6 +61,28 @@ const useCartStore = create(
 
       clearCart: () => set({ items: [] }),
 
+      unifyPaymentFrequency: (newFrequency) => {
+        set((state) => ({
+          items: state.items.map((item) => {
+            if (item.paymentChoice !== 'installment') return item;
+            if (item.paymentFrequency === newFrequency) return item;
+            
+            let newPeriodPayment = item.periodPayment || item.monthlyPayment;
+            if (newFrequency === 'weekly' && item.paymentFrequency === 'monthly') {
+               newPeriodPayment = newPeriodPayment / 4;
+            } else if (newFrequency === 'monthly' && item.paymentFrequency === 'weekly') {
+               newPeriodPayment = newPeriodPayment * 4;
+            }
+
+            return {
+              ...item,
+              paymentFrequency: newFrequency,
+              periodPayment: newPeriodPayment
+            };
+          })
+        }));
+      },
+
       // Computed properties (getters)
       getTotalItems: () => {
         return get().items.reduce((total, item) => total + item.quantity, 0);

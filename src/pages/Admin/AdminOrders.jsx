@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, query, orderBy, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { Package, CheckCircle, Clock, Bell, Users, AlertCircle } from 'lucide-react';
+import { Package, CheckCircle, Clock, Bell, Users, AlertCircle, Search, Filter, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
 
 function fmt(n) {
   return '₦' + Math.ceil(n).toLocaleString('en-NG');
@@ -86,6 +86,43 @@ export default function AdminOrders() {
   const completedOrders = orders.filter(o => o.status === 'Completed').length;
   const pendingOrders = orders.filter(o => o.status !== 'Completed').length;
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All Orders');
+  const [sortBy, setSortBy] = useState('Date (Newest First)');
+  const [expandedOrders, setExpandedOrders] = useState(new Set());
+
+  const toggleOrderExpand = (id) => {
+    setExpandedOrders(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const filteredOrders = orders.filter(o => {
+    if (statusFilter === 'Completed' && o.status !== 'Completed') return false;
+    if (statusFilter === 'Processing (Installments)' && o.status === 'Completed') return false;
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      if (o.id.toLowerCase().includes(term)) return true;
+      const customer = userCache[o.userId];
+      if (customer) {
+        if (`${customer.firstName} ${customer.lastName}`.toLowerCase().includes(term)) return true;
+        if (customer.email?.toLowerCase().includes(term)) return true;
+        if (customer.phone?.includes(term)) return true;
+      }
+      return false;
+    }
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === 'Date (Newest First)') return b.createdAt?.toMillis() - a.createdAt?.toMillis();
+    if (sortBy === 'Date (Oldest First)') return a.createdAt?.toMillis() - b.createdAt?.toMillis();
+    if (sortBy === 'Total Amount (High to Low)') return b.totalAmount - a.totalAmount;
+    if (sortBy === 'Total Amount (Low to High)') return a.totalAmount - b.totalAmount;
+    return 0;
+  });
+
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4rem', gap: '1rem', color: 'var(--muted-fg)' }}>
       <Clock size={24} /> Loading orders...
@@ -132,16 +169,91 @@ export default function AdminOrders() {
         </div>
       )}
 
-      {orders.length === 0 ? (
+      {orders.length > 0 && (
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem', background: 'white', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border)', alignItems: 'center' }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: '1 1 200px' }}>
+            <Search size={16} style={{ position: 'absolute', left: '0.75rem', color: 'var(--muted-fg)' }} />
+            <input
+              type="text"
+              placeholder="Search by Order ID, Name, Email, or Phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%', padding: '0.6rem 0.6rem 0.6rem 2.2rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem', background: 'var(--card-bg)' }}
+          >
+            <option>All Orders</option>
+            <option>Completed</option>
+            <option>Processing (Installments)</option>
+          </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <SlidersHorizontal size={16} style={{ color: 'var(--muted-fg)' }} />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem', background: 'var(--card-bg)' }}
+            >
+              <option>Date (Newest First)</option>
+              <option>Date (Oldest First)</option>
+              <option>Total Amount (High to Low)</option>
+              <option>Total Amount (Low to High)</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {filteredOrders.length === 0 ? (
         <div style={{ padding: '3rem', background: 'white', borderRadius: '8px', textAlign: 'center', border: '1px solid var(--border)' }}>
           <Package size={48} color="var(--muted-fg)" style={{ marginBottom: '1rem' }} />
-          <p style={{ color: 'var(--muted-fg)' }}>No orders have been placed yet.</p>
+          <p style={{ color: 'var(--muted-fg)' }}>No orders match your criteria.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {orders.map((order) => {
+          {filteredOrders.map((order) => {
             const customer = userCache[order.userId];
             const isNewlyComplete = newlyCompleted.has(order.id);
+
+            const isComplete = order.amountPaid >= order.totalAmount;
+            const combinedPeriodPayment = order.items?.reduce((acc, i) => acc + (i.paymentChoice === 'installment' ? (i.periodPayment || i.monthlyPayment) * i.quantity : 0), 0) || 0;
+            const isWeekly = order.items?.some(i => i.paymentFrequency === 'weekly');
+            const periodsPaid = combinedPeriodPayment > 0 ? Math.floor(order.amountPaid / combinedPeriodPayment) : 0;
+            const excessPaid = combinedPeriodPayment > 0 ? (order.amountPaid % combinedPeriodPayment) : 0;
+            
+            let nextPaymentDate = null;
+            let timerText = '';
+            let isOverdue = false;
+
+            if (!isComplete && order.createdAt) {
+              nextPaymentDate = new Date(order.createdAt.toMillis());
+              if (isWeekly) {
+                nextPaymentDate.setDate(nextPaymentDate.getDate() + (periodsPaid + 1) * 7);
+              } else {
+                nextPaymentDate.setMonth(nextPaymentDate.getMonth() + (periodsPaid + 1));
+              }
+
+              const diffTime = nextPaymentDate.getTime() - new Date().getTime();
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              if (diffDays < 0) {
+                isOverdue = true;
+                timerText = `Overdue by ${Math.abs(diffDays)} days`;
+              } else if (diffDays === 0) {
+                timerText = `Due today!`;
+                isOverdue = true;
+              } else {
+                timerText = `Due in ${diffDays} days`;
+              }
+            }
+
+            const balance = order.totalAmount - order.amountPaid;
+            let defaultCustomAmount = combinedPeriodPayment;
+            if (excessPaid > 0 && combinedPeriodPayment > 0) {
+              defaultCustomAmount = combinedPeriodPayment - excessPaid;
+            }
+            defaultCustomAmount = Math.min(balance, defaultCustomAmount);
 
             return (
               <div key={order.id} style={{
@@ -158,7 +270,7 @@ export default function AdminOrders() {
                 )}
 
                 {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', padding: '1rem', background: 'var(--muted)', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', padding: '1rem', background: 'var(--muted)', borderBottom: expandedOrders.has(order.id) ? '1px solid var(--border)' : 'none', cursor: 'pointer' }} onClick={() => toggleOrderExpand(order.id)}>
                   <div style={{ flex: '1 1 100px' }}>
                     <span style={{ fontSize: '0.8rem', color: 'var(--muted-fg)', display: 'block' }}>Order ID</span>
                     <strong style={{ fontFamily: 'monospace', fontSize: '0.85rem', wordBreak: 'break-all' }}>#{order.id}</strong>
@@ -186,22 +298,28 @@ export default function AdminOrders() {
                       )}
                     </div>
                   </div>
-                  <div style={{ flex: '1 1 100px' }}>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--muted-fg)', display: 'block' }}>Status</span>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-                      background: order.status === 'Completed' ? '#dcfce7' : '#fef3c7',
-                      color: order.status === 'Completed' ? '#166534' : '#92400e',
-                      padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: '600'
-                    }}>
-                      {order.status === 'Completed' ? <CheckCircle size={12} /> : <Clock size={12} />}
-                      {order.status}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 100px', justifyContent: 'flex-end' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--muted-fg)', display: 'block' }}>Status</span>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                          background: order.status === 'Completed' ? '#dcfce7' : '#fef3c7',
+                          color: order.status === 'Completed' ? '#166534' : '#92400e',
+                          padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: '600'
+                        }}>
+                          {order.status === 'Completed' ? <CheckCircle size={12} /> : <Clock size={12} />}
+                          {order.status}
+                        </span>
+                      </div>
+                      <div style={{ background: 'white', padding: '0.3rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+                        {expandedOrders.has(order.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    </div>
                   </div>
-                </div>
 
                 {/* Body */}
-                <div style={{ padding: '1rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                {expandedOrders.has(order.id) && (
+                  <div style={{ padding: '1rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                   {/* Items */}
                   <div style={{ flex: '1 1 100%' }}>
                     <h3 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Items Ordered</h3>
@@ -214,6 +332,15 @@ export default function AdminOrders() {
                           <div style={{ display: 'inline-block', marginTop: '0.25rem', fontSize: '0.72rem', fontWeight: '600', padding: '0.15rem 0.5rem', borderRadius: '4px', background: item.paymentChoice === 'installment' ? 'hsl(210 100% 95%)' : 'hsl(340 100% 95%)', color: item.paymentChoice === 'installment' ? '#1d4ed8' : 'var(--primary)' }}>
                             {item.paymentChoice === 'installment' ? `${item.paymentFrequency === 'weekly' ? item.installments * 4 + ' Weekly Payments' : item.installments + ' Monthly Payments'}` : 'Full Payment'}
                           </div>
+                          {item.paymentChoice === 'installment' && (item.periodPayment || item.monthlyPayment) ? (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--muted-fg)', marginTop: '0.25rem' }}>
+                              {fmt((item.periodPayment || item.monthlyPayment) * item.quantity)}/{item.paymentFrequency === 'weekly' ? 'wk' : 'mo'}
+                            </div>
+                          ) : item.paymentChoice === 'full' ? (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--muted-fg)', marginTop: '0.25rem', fontWeight: '600', color: 'var(--foreground)' }}>
+                              {fmt(item.price * item.quantity)}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     ))}
@@ -264,6 +391,17 @@ export default function AdminOrders() {
                         }}
                       />
                     </div>
+                    
+                    {!isComplete && nextPaymentDate && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--muted-fg)', textAlign: 'center', marginBottom: '0.75rem', background: '#eff6ff', padding: '0.5rem', borderRadius: '6px', border: '1px solid #bfdbfe' }}>
+                        Next Payment Due: <strong style={{ color: '#1d4ed8' }}>{nextPaymentDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
+                        <div style={{ display: 'inline-block', padding: '0.15rem 0.4rem', background: isOverdue ? '#fee2e2' : '#dcfce7', color: isOverdue ? '#b11a1a' : '#166534', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', marginLeft: '0.5rem' }}>
+                          {timerText}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', marginTop: '0.35rem', fontWeight: '600' }}>Expected Amount: {fmt(defaultCustomAmount)}</div>
+                        {excessPaid > 0 && <div style={{ fontSize: '0.7rem', color: '#3b82f6', marginTop: '0.15rem' }}>(Customer already paid {fmt(excessPaid)} towards this period)</div>}
+                      </div>
+                    )}
 
                     {/* Progress bar */}
                     <div style={{ width: '100%', background: '#e5e7eb', height: '8px', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.35rem' }}>
@@ -294,6 +432,7 @@ export default function AdminOrders() {
                     )}
                   </div>
                 </div>
+                )}
               </div>
             );
           })}

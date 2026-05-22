@@ -1,6 +1,6 @@
 import { Navigate, Outlet, NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
-import { Package, PlusCircle, LogOut, User, ClipboardList } from 'lucide-react';
+import { Package, PlusCircle, LogOut, User, ClipboardList, Settings } from 'lucide-react';
 import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
 import toast from 'react-hot-toast';
@@ -57,6 +57,12 @@ export default function AdminLayout() {
             style={({ isActive }) => sidebarLinkStyle(isActive)}
           >
             <PlusCircle size={18} /> Add Product
+          </NavLink>
+          <NavLink
+            to="/admin/settings"
+            style={({ isActive }) => sidebarLinkStyle(isActive)}
+          >
+            <Settings size={18} /> Site Settings
           </NavLink>
           <NavLink
             to="/profile"

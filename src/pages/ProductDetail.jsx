@@ -195,6 +195,10 @@ export default function ProductDetail() {
                       {interestAmt > 0 ? `(includes ${INTEREST[installments]}% interest)` : '(0% interest)'}
                     </p>
                   </div>
+                  
+                  <div style={{ background: 'var(--background)', border: '1px solid var(--border)', borderRadius: '6px', padding: '0.75rem', marginTop: '1rem', fontSize: '0.75rem', color: 'var(--muted-fg)', lineHeight: '1.4' }}>
+                    <strong style={{ color: 'var(--foreground)' }}>How multi-item orders work:</strong> Items with the exact same payment plan are processed together. If you mix items with different installment durations or frequencies (e.g. 4 Weeks vs 5 Weeks), you will be asked to either merge them into one plan or check out as separate orders.
+                  </div>
 
                   <button className="pd-installment-btn" style={{ width: '100%', height: '3rem', background: 'var(--card-bg)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontWeight: '600', fontSize: '0.95rem', cursor: 'pointer', transition: 'all 0.2s', marginTop: '1rem' }} onClick={handleInstallment}>
                     Start {paymentFrequency === 'weekly' ? 'Weekly' : 'Monthly'} Plan — {fmt(periodPayment)}/{paymentFrequency === 'weekly' ? 'wk' : 'mo'}
