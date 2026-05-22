@@ -27,7 +27,6 @@ export default function Footer() {
                         <ul className="space-y-3 text-sm font-medium">
                             <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Shop Categories</Link></li>
                             <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Deal of the Day</Link></li>
-                            <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Warranty Registration</Link></li>
                             <li><Link to="#" className="hover:text-white hover:translate-x-1 transition-all flex items-center"><i className="fas fa-angle-right mr-2 text-zeal-red"></i> Track Your Order</Link></li>
                         </ul>
                     </div>
@@ -50,12 +49,16 @@ export default function Footer() {
                                 <span>14 Electronics Avenue,<br />Victoria Island, Lagos,<br />Nigeria.</span>
                             </li>
                             <li className="flex items-center">
-                                <i className="fas fa-phone mr-3 text-zeal-red text-lg"></i>
-                                <span>+234 (0) 800 123 4567</span>
-                            </li>
-                            <li className="flex items-center">
-                                <i className="fas fa-envelope mr-3 text-zeal-red text-lg"></i>
-                                <span>sales@zealmart.com</span>
+                                <div className="flex items-start gap-4 transform transition-transform hover:-translate-y-1">
+                                <i className="fab fa-whatsapp text-3xl text-green-400"></i>
+                                <div>
+                                    <h4 className="font-bold text-white uppercase text-sm">Bulk Orders via WhatsApp</h4>
+                                    <p className="text-xs text-gray-400 mt-1">Contact us on WhatsApp for wholesale & bulk order pricing.</p>
+                                    <a href="https://wa.me/2340000000000" target="_blank" rel="noreferrer" className="inline-block mt-2 text-xs font-bold text-green-400 hover:text-green-300 transition-colors">
+                                        Chat Now <i className="fas fa-arrow-right ml-1"></i>
+                                    </a>
+                                </div>
+                            </div>
                             </li>
                         </ul>
                     </div>

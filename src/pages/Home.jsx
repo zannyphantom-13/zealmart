@@ -312,34 +312,32 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Newsletter/Trust Section */}
+            {/* Trust Badges Section */}
             <div className="bg-zeal-gray border-t border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-                        <div>
-                            <h3 className="text-2xl font-display font-black uppercase text-gray-900 mb-2">Join The Zealmart Family</h3>
-                            <p className="text-gray-600 mb-6 font-medium">Subscribe to receive updates, access to exclusive deals, and more.</p>
-                            <form className="flex w-full max-w-md group">
-                                <input type="email" placeholder="Enter your email address" className="flex-1 py-3 px-4 border border-gray-300 rounded-l outline-none focus:border-zeal-blue transition-colors" />
-                                <button type="submit" className="bg-zeal-red text-white px-6 font-bold uppercase rounded-r hover:bg-red-800 transition-colors shadow-md group-hover:shadow-lg">
-                                    Subscribe
-                                </button>
-                            </form>
-                        </div>
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="flex items-start gap-4 transform transition-transform hover:-translate-y-1">
-                                <i className="fas fa-shield-alt text-3xl text-zeal-blue"></i>
-                                <div>
-                                    <h4 className="font-bold text-gray-900 uppercase text-sm">Secure Payment</h4>
-                                    <p className="text-xs text-gray-500 mt-1">100% secure payment with Paystack & Flutterwave.</p>
-                                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                        <div className="flex items-start gap-4 transform transition-transform hover:-translate-y-1">
+                            <i className="fas fa-shield-alt text-3xl text-zeal-blue"></i>
+                            <div>
+                                <h4 className="font-bold text-gray-900 uppercase text-sm">Secure Payment</h4>
+                                <p className="text-xs text-gray-500 mt-1">100% secure payment with Paystack & Flutterwave.</p>
                             </div>
-                            <div className="flex items-start gap-4 transform transition-transform hover:-translate-y-1">
-                                <i className="fas fa-headset text-3xl text-zeal-blue"></i>
-                                <div>
-                                    <h4 className="font-bold text-gray-900 uppercase text-sm">24/7 Support</h4>
-                                    <p className="text-xs text-gray-500 mt-1">Dedicated support via calls & WhatsApp.</p>
-                                </div>
+                        </div>
+                        <div className="flex items-start gap-4 transform transition-transform hover:-translate-y-1">
+                            <i className="fas fa-truck text-3xl text-zeal-blue"></i>
+                            <div>
+                                <h4 className="font-bold text-gray-900 uppercase text-sm">Nationwide Delivery</h4>
+                                <p className="text-xs text-gray-500 mt-1">Fast delivery to all 36 states across Nigeria.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-4 transform transition-transform hover:-translate-y-1">
+                            <i className="fab fa-whatsapp text-3xl text-green-500"></i>
+                            <div>
+                                <h4 className="font-bold text-gray-900 uppercase text-sm">Bulk Orders via WhatsApp</h4>
+                                <p className="text-xs text-gray-500 mt-1">Contact us on WhatsApp for wholesale & bulk order pricing.</p>
+                                <a href="https://wa.me/2340000000000" target="_blank" rel="noreferrer" className="inline-block mt-2 text-xs font-bold text-green-600 hover:text-green-700 transition-colors">
+                                    Chat Now <i className="fas fa-arrow-right ml-1"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
