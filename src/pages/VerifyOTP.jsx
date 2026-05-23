@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import emailjs from '@emailjs/browser';
@@ -207,68 +207,86 @@ export default function VerifyOTP() {
   };
 
   return (
-    <main>
-      <div className="auth-page">
-        <div className="auth-card" style={{ textAlign: 'center' }}>
-          <h1>Verify Your Email</h1>
-          <p className="sub" style={{ marginBottom: '2rem' }}>
-            We sent a 6-digit code to <strong>{email}</strong>. <br />
-            Enter it below to confirm your email address.
-          </p>
-
-          {error && <div style={{ color: 'red', fontSize: '0.85rem', marginBottom: '1.5rem', background: '#fee2e2', padding: '0.75rem', borderRadius: '8px' }}>{error}</div>}
-
-          {timeLeft !== null && (
-            <div style={{ marginBottom: '1.5rem', fontWeight: 'bold', color: timeLeft === 0 ? 'red' : 'var(--primary)', fontSize: '1.2rem' }}>
-              {formatTime(timeLeft)}
-            </div>
-          )}
-
-          <form onSubmit={verifyOTP}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
-              {otp.map((data, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  maxLength="1"
-                  value={data}
-                  onChange={(e) => handleChange(e.target, index)}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                  onFocus={(e) => e.target.select()}
-                  style={{
-                    width: '3rem',
-                    height: '3.5rem',
-                    fontSize: '1.5rem',
-                    textAlign: 'center',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--card-bg)',
-                    color: 'var(--fg)',
-                    fontWeight: 'bold'
-                  }}
-                />
-              ))}
-            </div>
-
-            <button type="submit" className="auth-submit" disabled={loading}>
-              {loading ? 'Verifying...' : 'Verify Email'}
-            </button>
-          </form>
-
-          <div style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--muted-fg)' }}>
-            Didn't receive the code?{' '}
-            <button 
-              onClick={handleResend} 
-              disabled={resending}
-              style={{ 
-                background: 'none', border: 'none', color: 'var(--primary)', 
-                fontWeight: '600', cursor: resending ? 'not-allowed' : 'pointer',
-                textDecoration: 'underline'
-              }}
-            >
-              {resending ? 'Sending...' : 'Resend Code'}
-            </button>
+    <main className="min-h-screen flex flex-col">
+      <div className="flex-grow bg-gray-50 flex items-center justify-center py-12 px-4">
+        <div className="w-full max-w-lg">
+          
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <Link to="/" className="inline-block">
+              <div className="font-display text-4xl font-black tracking-tighter">
+                <span className="text-zeal-blue">ZEAL</span><span className="text-zeal-red">MART</span>
+              </div>
+            </Link>
+            <p className="text-gray-500 text-sm mt-2 font-medium">Marketplace of the Nation</p>
           </div>
+
+          {/* Card */}
+          <div className="bg-white border border-gray-200 shadow-lg rounded-sm overflow-hidden">
+            {/* Card Header */}
+            <div className="bg-zeal-dark px-8 py-6 text-white text-center">
+              <h1 className="text-2xl font-black uppercase tracking-wide font-display">Verify Your Email</h1>
+              <p className="text-gray-400 text-sm font-medium mt-1">We sent a 6-digit code to <strong>{email}</strong></p>
+            </div>
+
+            <div className="px-8 py-8 text-center">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-sm mb-6 flex items-center gap-2 justify-center">
+                  <i className="fas fa-exclamation-circle text-red-500"></i> {error}
+                </div>
+              )}
+
+              {timeLeft !== null && (
+                <div className={`mb-6 font-black text-xl tracking-wider ${timeLeft === 0 ? 'text-red-500' : 'text-zeal-blue'}`}>
+                  {formatTime(timeLeft)}
+                </div>
+              )}
+
+              <form onSubmit={verifyOTP}>
+                <div className="flex justify-center gap-3 mb-8">
+                  {otp.map((data, index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      maxLength="1"
+                      value={data}
+                      onChange={(e) => handleChange(e.target, index)}
+                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      onFocus={(e) => e.target.select()}
+                      className="w-12 h-14 text-2xl text-center border-2 border-gray-200 focus:border-zeal-blue outline-none rounded-sm font-black bg-gray-50 focus:bg-white text-zeal-dark transition-all shadow-sm"
+                    />
+                  ))}
+                </div>
+
+                <button type="submit" disabled={loading} className="w-full bg-zeal-red hover:bg-red-800 disabled:opacity-60 text-white font-black py-4 rounded-sm uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                  {loading ? (
+                    <><i className="fas fa-spinner fa-spin"></i> Verifying...</>
+                  ) : (
+                    <><i className="fas fa-check-circle"></i> Verify Email</>
+                  )}
+                </button>
+              </form>
+
+              <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+                <p className="text-sm text-gray-600 font-medium">
+                  Didn't receive the code?{' '}
+                  <button 
+                    onClick={handleResend} 
+                    disabled={resending}
+                    className="text-zeal-blue font-black hover:text-zeal-red transition-colors disabled:opacity-50 underline"
+                  >
+                    {resending ? 'Sending...' : 'Resend Code'}
+                  </button>
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Trust Badges */}
+          <div className="mt-6 flex justify-center gap-8 text-xs text-gray-400 font-medium">
+            <span><i className="fas fa-shield-alt mr-1 text-blue-500"></i> Secure Verification</span>
+          </div>
+
         </div>
       </div>
       <Footer />

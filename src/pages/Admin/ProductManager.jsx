@@ -2,90 +2,445 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2 } from 'lucide-react';
+import {
+  Edit, Trash2, PlusCircle, Package, Star, Search,
+  SlidersHorizontal, Ruler, BadgePercent, ArrowUpDown
+} from 'lucide-react';
+
+const CATEGORY_STYLES = {
+  'Air Conditioners':  { bg: '#eff6ff', text: '#3b82f6', border: '#bfdbfe', dot: '#3b82f6', glow: 'rgba(59,130,246,0.15)' },
+  'Televisions':     { bg: '#f3f0ff', text: '#7c3aed', border: '#ddd6fe', dot: '#7c3aed', glow: 'rgba(124,58,237,0.15)' },
+  'Washing Machines': { bg: '#fdf2f8', text: '#db2777', border: '#fbcfe8', dot: '#db2777', glow: 'rgba(219,39,119,0.15)' },
+  'Refrigerators': { bg: '#fffbeb', text: '#d97706', border: '#fde68a', dot: '#d97706', glow: 'rgba(217,119,6,0.15)' },
+  'Generators': { bg: '#ecfdf5', text: '#059669', border: '#a7f3d0', dot: '#059669', glow: 'rgba(5,150,105,0.15)' },
+  'Phones': { bg: '#ecf9ff', text: '#0891b2', border: '#a5f3fc', dot: '#0891b2', glow: 'rgba(6,182,212,0.15)' },
+  'Laptops': { bg: '#f3e8ff', text: '#a855f7', border: '#e9d5ff', dot: '#a855f7', glow: 'rgba(168,85,247,0.15)' },
+  'Audio': { bg: '#ffe2e6', text: '#f43f5e', border: '#ffbdc7', dot: '#f43f5e', glow: 'rgba(244,63,94,0.15)' },
+  'Gaming': { bg: '#fff7ed', text: '#fb923c', border: '#fed7aa', dot: '#fb923c', glow: 'rgba(251,146,60,0.15)' },
+};
+
+const defaultCat = { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb', dot: '#6b7280', glow: 'rgba(0,0,0,0.08)' };
+
+function CategoryBadge({ category }) {
+  const s = CATEGORY_STYLES[category] || defaultCat;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      background: s.bg, color: s.text, border: `1px solid ${s.border}`,
+      fontSize: 10, fontWeight: 800, padding: '3px 10px', borderRadius: 99,
+      textTransform: 'uppercase', letterSpacing: '0.08em'
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
+      {category}
+    </span>
+  );
+}
+
+function ProductCard({ product, onDelete }) {
+  const [hovered, setHovered] = useState(false);
+  const catStyle = CATEGORY_STYLES[product.category] || defaultCat;
+  const hasSale = product.pss && Number(product.pss) > 0 && Number(product.pss) < Number(product.price);
+  const discount = hasSale
+    ? Math.round(100 - (Number(product.pss) / Number(product.price)) * 100)
+    : 0;
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: '#fff',
+        borderRadius: 18,
+        border: `1.5px solid ${hovered ? catStyle.border : '#e5e7eb'}`,
+        boxShadow: hovered
+          ? `0 12px 40px ${catStyle.glow}, 0 4px 16px rgba(0,0,0,0.06)`
+          : '0 2px 12px rgba(0,0,0,0.05)',
+        overflow: 'hidden',
+        transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+        transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+      }}
+    >
+      {/* Featured badge */}
+      {product.featured && (
+        <div style={{
+          position: 'absolute', top: 12, left: 12, zIndex: 2,
+          display: 'flex', alignItems: 'center', gap: 4,
+          background: 'linear-gradient(135deg,#f59e0b,#fbbf24)',
+          color: '#fff', fontSize: 9, fontWeight: 900,
+          padding: '3px 9px', borderRadius: 99, letterSpacing: '0.1em',
+          boxShadow: '0 2px 8px rgba(245,158,11,0.4)'
+        }}>
+          <Star size={9} fill="#fff" /> FEATURED
+        </div>
+      )}
+
+      {/* Sale badge */}
+      {hasSale && (
+        <div style={{
+          position: 'absolute', top: 12, right: 12, zIndex: 2,
+          background: 'linear-gradient(135deg,#dc2626,#ef4444)',
+          color: '#fff', fontSize: 9, fontWeight: 900,
+          padding: '3px 9px', borderRadius: 99, letterSpacing: '0.08em',
+          boxShadow: '0 2px 8px rgba(220,38,38,0.4)'
+        }}>
+          -{discount}% OFF
+        </div>
+      )}
+
+      {/* Image */}
+      <div style={{
+        height: 200, background: `linear-gradient(135deg,${catStyle.bg},#f9fafb)`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden', position: 'relative'
+      }}>
+        {product.img ? (
+          <img
+            src={product.img} alt={product.name} loading="lazy" decoding="async"
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+              transform: hovered ? 'scale(1.05)' : 'scale(1)',
+              transition: 'transform 0.35s ease'
+            }}
+          />
+        ) : (
+          <Package size={48} color={catStyle.text} style={{ opacity: 0.3 }} />
+        )}
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* Category */}
+        <CategoryBadge category={product.category} />
+
+        {/* Name */}
+        <h3 style={{
+          margin: 0, fontSize: 15, fontWeight: 800, color: '#111827',
+          lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical', overflow: 'hidden'
+        }}>
+          {product.name}
+        </h3>
+
+        {/* Meta chips */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {product.length && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: '#f3f4f6', color: '#374151', border: '1px solid #e5e7eb',
+              fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 8
+            }}>
+              <Ruler size={11} /> {product.length}
+            </span>
+          )}
+          {hasSale && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca',
+              fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 8
+            }}>
+              <BadgePercent size={11} /> Sale
+            </span>
+          )}
+        </div>
+
+        {/* Price */}
+        <div style={{ marginTop: 'auto', paddingTop: 6 }}>
+          {hasSale ? (
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ fontSize: 20, fontWeight: 900, color: '#dc2626' }}>
+                ₦{Number(product.pss).toLocaleString()}
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#9ca3af', textDecoration: 'line-through' }}>
+                ₦{Number(product.price).toLocaleString()}
+              </span>
+            </div>
+          ) : (
+            <span style={{ fontSize: 20, fontWeight: 900, color: '#111827' }}>
+              ₦{Number(product.price).toLocaleString()}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Action bar */}
+      <div style={{
+        padding: '12px 18px',
+        background: '#f9fafb',
+        borderTop: '1px solid #f3f4f6',
+        display: 'flex', gap: 10
+      }}>
+        <Link
+          to={`/admin/edit/${product.id}`}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            padding: '9px 0', borderRadius: 10,
+            background: hovered ? 'linear-gradient(135deg,#1d4ed8,#2563eb)' : '#eff6ff',
+            color: hovered ? '#fff' : '#1d4ed8',
+            fontSize: 12, fontWeight: 700, textDecoration: 'none',
+            border: '1.5px solid #bfdbfe',
+            transition: 'all 0.2s',
+            letterSpacing: '0.04em'
+          }}
+        >
+          <Edit size={14} /> Edit
+        </Link>
+        <button
+          onClick={() => onDelete(product.id)}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            padding: '9px 0', borderRadius: 10,
+            background: '#fff', color: '#dc2626',
+            fontSize: 12, fontWeight: 700,
+            border: '1.5px solid #fecaca',
+            cursor: 'pointer', transition: 'all 0.2s',
+            letterSpacing: '0.04em'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg,#dc2626,#ef4444)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#dc2626'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = '#fecaca'; }}
+        >
+          <Trash2 size={14} /> Delete
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function ProductManager() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filterCat, setFilterCat] = useState('All');
+  const [sortBy, setSortBy] = useState('newest');
 
   const fetchProducts = async () => {
-    await Promise.resolve();
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "products"));
+      const querySnapshot = await getDocs(collection(db, 'products'));
       const items = [];
-      querySnapshot.forEach((doc) => {
-        items.push({ id: doc.id, ...doc.data() });
-      });
+      querySnapshot.forEach((d) => items.push({ id: d.id, ...d.data() }));
       setProducts(items);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    let message = `⚠️ Delete "${product.name}"?\n\n`;
+    if (product.featured) {
+      message += '🌟 This is a FEATURED product\n';
+    }
+    message += `Price: ₦${Number(product.price).toLocaleString()}\n\n`;
+    message += 'This action cannot be undone.';
+
+    if (window.confirm(message)) {
       try {
-        await deleteDoc(doc(db, "products", id));
-        setProducts(products.filter(p => p.id !== id));
+        await deleteDoc(doc(db, 'products', id));
+        setProducts(prev => prev.filter(p => p.id !== id));
       } catch (error) {
-        console.error("Error deleting product:", error);
+        console.error('Error deleting product:', error);
+        alert('Failed to delete product. Please try again.');
       }
     }
   };
 
-  if (loading) return <div>Loading products...</div>;
+  // Filter & sort
+  const filtered = products
+    .filter(p => {
+      const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+      const matchCat = filterCat === 'All' || p.category === filterCat;
+      return matchSearch && matchCat;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'price-asc') return Number(a.price) - Number(b.price);
+      if (sortBy === 'price-desc') return Number(b.price) - Number(a.price);
+      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+      // newest (default)
+      return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+    });
+
+  const stats = {
+    total: products.length,
+    featured: products.filter(p => p.featured).length,
+    onSale: products.filter(p => p.pss && Number(p.pss) > 0 && Number(p.pss) < Number(p.price)).length,
+  };
+
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: '#9ca3af' }}>
+      <i className="fas fa-circle-notch fa-spin" style={{ fontSize: 40, marginBottom: 16, color: '#7c3aed' }} />
+      <h2 style={{ fontSize: 18, fontWeight: 800, color: '#6b7280', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Loading Products...</h2>
+    </div>
+  );
 
   return (
-    <div style={{ background: 'var(--card)', padding: '1.5rem', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-card)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-display)', margin: 0 }}>Manage Products</h1>
-        <Link to="/admin/new" className="buy-once-btn" style={{ textDecoration: 'none', height: '2.5rem', fontSize: '0.85rem', padding: '0 1.25rem', flexShrink: 0 }}>
-          Add New Product
+    <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 28 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: '#111827', letterSpacing: '-0.02em' }}>
+            Manage Products
+          </h1>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6b7280' }}>
+            {products.length} product{products.length !== 1 ? 's' : ''} in your catalogue
+          </p>
+        </div>
+        <Link
+          to="/admin/new"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: 'linear-gradient(135deg,#7c3aed,#6d28d9)',
+            color: '#fff', textDecoration: 'none',
+            fontSize: 13, fontWeight: 800, padding: '12px 22px',
+            borderRadius: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
+            boxShadow: '0 6px 20px rgba(124,58,237,0.35)',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(124,58,237,0.45)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(124,58,237,0.35)'; }}
+        >
+          <PlusCircle size={18} /> Add New Product
         </Link>
       </div>
 
-      {products.length === 0 ? (
-        <p style={{ color: 'var(--muted-fg)' }}>No products found. Add some to get started!</p>
-      ) : (
-        <div style={{ overflowX: 'auto', width: '100%' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid var(--border)', color: 'var(--muted-fg)' }}>
-                <th style={{ padding: '0.75rem' }}>Image</th>
-                <th style={{ padding: '0.75rem' }}>Name</th>
-                <th style={{ padding: '0.75rem' }}>Category</th>
-                <th style={{ padding: '0.75rem' }}>Price</th>
-                <th style={{ padding: '0.75rem' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(product => (
-                <tr key={product.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '0.75rem' }}>
-                    <img src={product.img} alt={product.name} loading="lazy" decoding="async" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                  </td>
-                  <td style={{ padding: '0.75rem', fontWeight: 500 }}>{product.name}</td>
-                  <td style={{ padding: '0.75rem' }}>{product.category}</td>
-                  <td style={{ padding: '0.75rem' }}>₦{product.price.toLocaleString()}</td>
-                  <td style={{ padding: '0.75rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <Link to={`/admin/edit/${product.id}`} style={{ color: 'var(--primary)' }}><Edit size={18} /></Link>
-                      <button onClick={() => handleDelete(product.id)} style={{ color: 'red' }}><Trash2 size={18} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Stats Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
+        {[
+          { label: 'Total Products', value: stats.total, color: '#7c3aed', bg: '#f3f0ff', icon: '📦' },
+          { label: 'Featured',       value: stats.featured, color: '#d97706', bg: '#fffbeb', icon: '⭐' },
+          { label: 'On Sale',        value: stats.onSale,   color: '#dc2626', bg: '#fef2f2', icon: '🏷️' },
+        ].map(s => (
+          <div key={s.label} style={{
+            background: s.bg, borderRadius: 14, padding: '16px 20px',
+            border: `1px solid ${s.color}22`, display: 'flex', alignItems: 'center', gap: 14
+          }}>
+            <span style={{ fontSize: 28 }}>{s.icon}</span>
+            <div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{s.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div style={{
+        background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb',
+        padding: '16px 20px', marginBottom: 24,
+        display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center'
+      }}>
+        {/* Search */}
+        <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 180 }}>
+          <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search products…"
+            style={{
+              width: '100%', padding: '9px 12px 9px 36px',
+              border: '1.5px solid #e5e7eb', borderRadius: 10,
+              fontSize: 13, fontWeight: 500, color: '#111827',
+              outline: 'none', background: '#f9fafb', boxSizing: 'border-box'
+            }}
+            onFocus={e => { e.target.style.borderColor = '#7c3aed'; e.target.style.background = '#fff'; }}
+            onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; }}
+          />
         </div>
+
+        {/* Category filter */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <SlidersHorizontal size={15} style={{ color: '#9ca3af', alignSelf: 'center' }} />
+          {['All', ...Object.keys(CATEGORY_STYLES)].map(cat => {
+            const s = cat === 'All' ? null : CATEGORY_STYLES[cat];
+            const active = filterCat === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setFilterCat(cat)}
+                style={{
+                  padding: '6px 14px', borderRadius: 99, border: '1.5px solid',
+                  fontSize: 11, fontWeight: 800, cursor: 'pointer',
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                  transition: 'all 0.15s',
+                  background: active ? (s ? s.bg : '#111827') : '#f3f4f6',
+                  borderColor: active ? (s ? s.border : '#111827') : '#e5e7eb',
+                  color: active ? (s ? s.text : '#fff') : '#6b7280',
+                }}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Sort */}
+        <div style={{ position: 'relative', marginLeft: 'auto' }}>
+          <ArrowUpDown size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+          <select
+            value={sortBy} onChange={e => setSortBy(e.target.value)}
+            style={{
+              padding: '9px 12px 9px 30px', borderRadius: 10,
+              border: '1.5px solid #e5e7eb', fontSize: 12, fontWeight: 600,
+              color: '#374151', background: '#f9fafb', outline: 'none', cursor: 'pointer'
+            }}
+          >
+            <option value="newest">Newest First</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+            <option value="name">A → Z</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Grid or Empty */}
+      {filtered.length === 0 ? (
+        <div style={{
+          background: '#fff', borderRadius: 18, border: '1px solid #e5e7eb',
+          padding: '64px 32px', textAlign: 'center'
+        }}>
+          <Package size={56} style={{ color: '#d1d5db', margin: '0 auto 16px' }} />
+          <p style={{ color: '#6b7280', fontWeight: 600, fontSize: 16, margin: '0 0 20px' }}>
+            {search || filterCat !== 'All' ? 'No products match your filters.' : 'No products found. Add some to get started!'}
+          </p>
+          {!search && filterCat === 'All' && (
+            <Link
+              to="/admin/new"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: 'linear-gradient(135deg,#7c3aed,#6d28d9)',
+                color: '#fff', textDecoration: 'none',
+                fontSize: 13, fontWeight: 800, padding: '12px 24px', borderRadius: 12,
+                letterSpacing: '0.06em', textTransform: 'uppercase'
+              }}
+            >
+              <PlusCircle size={18} /> Add First Product
+            </Link>
+          )}
+        </div>
+      ) : (
+        <>
+          <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16, fontWeight: 600 }}>
+            Showing {filtered.length} of {products.length} products
+          </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: 20
+          }}>
+            {filtered.map(product => (
+              <ProductCard key={product.id} product={product} onDelete={handleDelete} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

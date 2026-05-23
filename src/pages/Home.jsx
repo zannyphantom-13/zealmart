@@ -11,7 +11,7 @@ const DEFAULT_SLIDES = [
         subtitle: "Premium Air Conditioners, Televisions, and Home Appliances from world-class brands.",
         buttonText: "Shop Appliances",
         link: "/products",
-        image: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=1920&q=80"
+        image: "https://images.pexels.com/photos/3587620/pexels-photo-3587620.jpeg?auto=format&fit=crop&w=1920&q=80"
     },
     {
         id: 2,
@@ -19,7 +19,7 @@ const DEFAULT_SLIDES = [
         subtitle: "Get up to 30% off on Smart 4K UHD Televisions.",
         buttonText: "View TV Deals",
         link: "/products?cat=Televisions",
-        image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=1920&q=80"
+        image: "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=format&fit=crop&w=1920&q=80"
     },
     {
         id: 3,
@@ -27,7 +27,7 @@ const DEFAULT_SLIDES = [
         subtitle: "Inverter ACs built for maximum cooling and low energy consumption.",
         buttonText: "Shop Air Conditioners",
         link: "/products?cat=Air%20Conditioners",
-        image: "https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?auto=format&fit=crop&w=1920&q=80"
+        image: "https://images.pexels.com/photos/2581274/pexels-photo-2581274.jpeg?auto=format&fit=crop&w=1920&q=80"
     },
     {
         id: 4,
@@ -35,7 +35,7 @@ const DEFAULT_SLIDES = [
         subtitle: "Reliable generators and solar solutions for uninterrupted power.",
         buttonText: "Explore Generators",
         link: "/products?cat=Generators",
-        image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80"
+        image: "https://images.pexels.com/photos/159358/electric-pole-sunset-lamp-159358.jpeg?auto=format&fit=crop&w=1920&q=80"
     },
     {
         id: 5,
@@ -43,7 +43,7 @@ const DEFAULT_SLIDES = [
         subtitle: "Double door refrigerators and chest freezers.",
         buttonText: "Shop Refrigerators",
         link: "/products?cat=Refrigerators",
-        image: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&w=1920&q=80"
+        image: "https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=format&fit=crop&w=1920&q=80"
     },
     {
         id: 6,
@@ -51,7 +51,7 @@ const DEFAULT_SLIDES = [
         subtitle: "Top load and front load washing machines.",
         buttonText: "Shop Washing Machines",
         link: "/products?cat=Washing%20Machines",
-        image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=1920&q=80"
+        image: "https://images.pexels.com/photos/6194131/pexels-photo-6194131.jpeg?auto=format&fit=crop&w=1920&q=80"
     },
     {
         id: 7,
@@ -59,23 +59,23 @@ const DEFAULT_SLIDES = [
         subtitle: "Consoles, soundbars, and home theater systems.",
         buttonText: "Discover Gaming",
         link: "/products?cat=Gaming",
-        image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=1920&q=80"
+        image: "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=format&fit=crop&w=1920&q=80"
     }
 ];
 
 const DEFAULT_FEATURED = [
-    { id: '1', name: 'Royal 1.5HP Split Air Conditioner', price: 285000, oldPrice: 310000, category: 'Air Conditioners', brand: 'Royal', img: 'https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?w=500&q=80', tag: 'Top Seller' },
-    { id: '2', name: 'Samsung 65" Class CU7000 Crystal UHD 4K TV', price: 650000, category: 'Televisions', brand: 'Samsung', img: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80', tag: 'Official Warranty' },
-    { id: '3', name: 'Panasonic Top Load Washing Machine 10kg', price: 345000, oldPrice: 380000, category: 'Washing Machines', brand: 'Panasonic', img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500&q=80' },
-    { id: '4', name: 'Thermocool 3.5kVA Generator (Igwe)', price: 420000, category: 'Generators', brand: 'Thermocool', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80', tag: 'Fast Moving' },
-    { id: '5', name: 'LG Double Door Refrigerator 600L', price: 520000, oldPrice: 580000, category: 'Refrigerators', brand: 'LG', img: 'https://images.unsplash.com/photo-1584622614875-2f8151ecc43d?w=500&q=80', tag: 'Best Deal' },
-    { id: '6', name: 'Sony 55" Bravia XR OLED 4K TV', price: 890000, category: 'Televisions', brand: 'Sony', img: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=500&q=80', tag: 'Premium' },
-    { id: '7', name: 'Hisense 2HP Inverter Air Conditioner', price: 340000, oldPrice: 380000, category: 'Air Conditioners', brand: 'Hisense', img: 'https://images.unsplash.com/photo-1571427282427-a96fa76a01bb?w=500&q=80' },
-    { id: '8', name: 'Indesit Front Load Washing Machine 7kg', price: 285000, oldPrice: 320000, category: 'Washing Machines', brand: 'Indesit', img: 'https://images.unsplash.com/photo-1584622614875-2f8151ecc43d?w=500&q=80', tag: 'Budget Pick' },
-    { id: '9', name: 'Midea 1.5HP Portable Air Conditioner', price: 210000, category: 'Air Conditioners', brand: 'Midea', img: 'https://images.unsplash.com/photo-1567619705814-151cff786d1d?w=500&q=80' },
-    { id: '10', name: 'TCL 43" Smart TV Full HD', price: 185000, oldPrice: 220000, category: 'Televisions', brand: 'TCL', img: 'https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&q=80', tag: 'Hot Sale' },
-    { id: '11', name: 'Scanfrost Chest Freezer 500L', price: 195000, category: 'Refrigerators', brand: 'Scanfrost', img: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&q=80' },
-    { id: '12', name: 'Binatone Gas Cooker 5 Burner', price: 125000, oldPrice: 150000, category: 'Kitchen', brand: 'Binatone', img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&q=80' },
+    { id: '1', name: 'Royal 1.5HP Split Air Conditioner', price: 285000, oldPrice: 310000, category: 'Air Conditioners', brand: 'Royal', img: 'https://images.pexels.com/photos/2581274/pexels-photo-2581274.jpeg?w=500&q=80', tag: 'Top Seller' },
+    { id: '2', name: 'Samsung 65" Class CU7000 Crystal UHD 4K TV', price: 650000, category: 'Televisions', brand: 'Samsung', img: 'https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?w=500&q=80', tag: 'Official Warranty' },
+    { id: '3', name: 'Panasonic Top Load Washing Machine 10kg', price: 345000, oldPrice: 380000, category: 'Washing Machines', brand: 'Panasonic', img: 'https://images.pexels.com/photos/6194131/pexels-photo-6194131.jpeg?w=500&q=80' },
+    { id: '4', name: 'Thermocool 3.5kVA Generator (Igwe)', price: 420000, category: 'Generators', brand: 'Thermocool', img: 'https://images.pexels.com/photos/159358/electric-pole-sunset-lamp-159358.jpeg?w=500&q=80', tag: 'Fast Moving' },
+    { id: '5', name: 'LG Double Door Refrigerator 600L', price: 520000, oldPrice: 580000, category: 'Refrigerators', brand: 'LG', img: 'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?w=500&q=80', tag: 'Best Deal' },
+    { id: '6', name: 'Sony 55" Bravia XR OLED 4K TV', price: 890000, category: 'Televisions', brand: 'Sony', img: 'https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?w=500&q=80', tag: 'Premium' },
+    { id: '7', name: 'Hisense 2HP Inverter Air Conditioner', price: 340000, oldPrice: 380000, category: 'Air Conditioners', brand: 'Hisense', img: 'https://images.pexels.com/photos/2581274/pexels-photo-2581274.jpeg?w=500&q=80' },
+    { id: '8', name: 'Indesit Front Load Washing Machine 7kg', price: 285000, oldPrice: 320000, category: 'Washing Machines', brand: 'Indesit', img: 'https://images.pexels.com/photos/6194131/pexels-photo-6194131.jpeg?w=500&q=80', tag: 'Budget Pick' },
+    { id: '9', name: 'Midea 1.5HP Portable Air Conditioner', price: 210000, category: 'Air Conditioners', brand: 'Midea', img: 'https://images.pexels.com/photos/2581274/pexels-photo-2581274.jpeg?w=500&q=80' },
+    { id: '10', name: 'TCL 43" Smart TV Full HD', price: 185000, oldPrice: 220000, category: 'Televisions', brand: 'TCL', img: 'https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?w=500&q=80', tag: 'Hot Sale' },
+    { id: '11', name: 'Scanfrost Chest Freezer 500L', price: 195000, category: 'Refrigerators', brand: 'Scanfrost', img: 'https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?w=500&q=80' },
+    { id: '12', name: 'Binatone Gas Cooker 5 Burner', price: 125000, oldPrice: 150000, category: 'Kitchen', brand: 'Binatone', img: 'https://images.pexels.com/photos/278145/pexels-photo-278145.jpeg?w=500&q=80' },
 ];
 
 export default function Home() {
@@ -120,12 +120,12 @@ export default function Home() {
     }, []);
 
     const brands = [
-        { name: 'Samsung', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg' },
-        { name: 'LG', logo: 'https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg' },
-        { name: 'Panasonic', logo: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/Panasonic_logo.svg' },
-        { name: 'Sony', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg' },
-        { name: 'Hisense', logo: 'https://upload.wikimedia.org/wikipedia/commons/d/dd/Hisense_logo.svg' },
-        { name: 'TCL', logo: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/TCL_logo.svg' }
+        { name: 'Samsung', logo: 'https://www.vectorlogo.zone/logos/samsung/samsung-ar21.svg' },
+        { name: 'LG', logo: 'https://www.vectorlogo.zone/logos/lg/lg-ar21.svg' },
+        { name: 'Panasonic', logo: 'https://logo.clearbit.com/panasonic.com' },
+        { name: 'Sony', logo: 'https://logo.clearbit.com/sony.com' },
+        { name: 'Hisense', logo: 'https://logo.clearbit.com/hisense.com' },
+        { name: 'TCL', logo: 'https://logo.clearbit.com/tcl.com' }
     ];
 
     return (
@@ -203,10 +203,37 @@ export default function Home() {
             <div className="bg-white border-b border-gray-200 py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h3 className="text-center text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Official Partners & Distributors Of</h3>
-                    <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                        {brands.map((b, i) => (
-                            <img key={i} src={b.logo} alt={b.name} className="h-6 md:h-8 object-contain transition-all hover:scale-110" />
-                        ))}
+                    <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-60 hover:opacity-100 transition-all duration-500">
+                        <div className="text-center">
+                            <div className="h-8 md:h-10 flex items-center justify-center mb-2">
+                                <span className="font-black text-lg text-gray-800">Samsung</span>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <div className="h-8 md:h-10 flex items-center justify-center mb-2">
+                                <span className="font-black text-lg text-gray-800">LG</span>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <div className="h-8 md:h-10 flex items-center justify-center mb-2">
+                                <span className="font-black text-lg text-gray-800">Panasonic</span>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <div className="h-8 md:h-10 flex items-center justify-center mb-2">
+                                <span className="font-black text-lg text-gray-800">Sony</span>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <div className="h-8 md:h-10 flex items-center justify-center mb-2">
+                                <span className="font-black text-lg text-gray-800">Hisense</span>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <div className="h-8 md:h-10 flex items-center justify-center mb-2">
+                                <span className="font-black text-lg text-gray-800">TCL</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -216,7 +243,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Link to="/products?cat=Air%20Conditioners" className="group relative h-64 bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
-                        <img src="https://images.unsplash.com/photo-1628135544717-3ba0a108a715?w=500&q=80" alt="ACs" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                        <img src="https://images.pexels.com/photos/2581274/pexels-photo-2581274.jpeg?w=500&q=80" alt="ACs" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute bottom-0 left-0 w-full p-6 z-20">
                             <span className="text-zeal-red font-bold text-sm uppercase tracking-wider block mb-1">Cooling</span>
                             <h3 className="text-white font-display font-black text-2xl uppercase">Air Conditioners</h3>
@@ -228,7 +255,7 @@ export default function Home() {
                     
                     <Link to="/products?cat=Televisions" className="group relative h-64 bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
-                        <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500&q=80" alt="TVs" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                        <img src="https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?w=500&q=80" alt="TVs" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute bottom-0 left-0 w-full p-6 z-20">
                             <span className="text-zeal-red font-bold text-sm uppercase tracking-wider block mb-1">Entertainment</span>
                             <h3 className="text-white font-display font-black text-2xl uppercase">Televisions</h3>
@@ -240,7 +267,7 @@ export default function Home() {
 
                     <Link to="/products?cat=Refrigerators" className="group relative h-64 bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
-                        <img src="https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=500&q=80" alt="Refrigerators" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
+                        <img src="https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?w=500&q=80" alt="Refrigerators" className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute bottom-0 left-0 w-full p-6 z-20">
                             <span className="text-zeal-red font-bold text-sm uppercase tracking-wider block mb-1">Kitchen</span>
                             <h3 className="text-white font-display font-black text-2xl uppercase">Refrigerators</h3>

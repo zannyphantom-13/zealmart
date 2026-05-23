@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, ArrowLeft, CreditCard } from 'lucide-react';
+import { Trash2, ArrowLeft, CreditCard, ShoppingBag } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import useCartStore from '../store/useCartStore';
@@ -15,7 +15,7 @@ function fmt(n) {
 export default function Cart() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { items, _hydrated, removeFromCart, updateQuantity, getInitialPaymentTotal, clearCart, unifyPaymentFrequency } = useCartStore();
+  const { items, _hydrated, removeFromCart, updateQuantity, getInitialPaymentTotal, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deliveryInfo, setDeliveryInfo] = useState({
@@ -28,9 +28,7 @@ export default function Cart() {
   const [showPreview, setShowPreview] = useState(false);
   const [conflictDismissed, setConflictDismissed] = useState(false);
   const [splitMode, setSplitMode] = useState(false);
-  // expandedItems: one entry per unit, each with a unique splitId
   const [expandedItems, setExpandedItems] = useState([]);
-  // itemGroups: maps splitId -> groupNumber (1-5)
   const [itemGroups, setItemGroups] = useState({});
 
   const getPaymentSignature = (item) => {
@@ -38,7 +36,6 @@ export default function Cart() {
     return `${item.paymentFrequency}-${item.installments}`;
   };
 
-  // Validate that all non-full-payment items in a group share the same signature
   const getGroupConflicts = (groups) => {
     const conflicts = {};
     Object.entries(groups).forEach(([gId, groupItems]) => {
@@ -61,7 +58,6 @@ export default function Cart() {
   };
 
   const enterSplitMode = () => {
-    // Expand items by quantity — each unit gets a unique splitId
     const expanded = [];
     let sigToGroup = {};
     let groupCounter = 1;
@@ -91,7 +87,6 @@ export default function Cart() {
     setItemGroups({});
   };
 
-  // Recalculate periodPayment when installments or frequency changes after unification
   const recalcPeriodPayment = (item, targetFreq, targetDur) => {
     const INTEREST = { 2: 0, 3: 0.1, 4: 0.1, 5: 0.2, 6: 0.2 };
     const rate = INTEREST[targetDur] ?? 0.2;
@@ -102,17 +97,13 @@ export default function Cart() {
     return fullAmount / targetDur;
   };
 
-  // Korapay disabled temporarily
-
-  // Wait for Zustand to hydrate from localStorage before rendering empty cart
   if (!_hydrated) {
     return (
-      <main>
-        <div className="container" style={{ padding: '6rem 1rem 4rem', minHeight: '60vh', textAlign: 'center' }}>
-          <h1 style={{ marginBottom: '2rem', fontFamily: 'var(--font-display)' }}>Your Cart</h1>
-          <p style={{ color: 'var(--muted-fg)' }}>Loading cart...</p>
+      <main className="min-h-screen flex flex-col bg-gray-50">
+        <div className="flex-grow flex flex-col items-center justify-center text-gray-400">
+          <i className="fas fa-circle-notch fa-spin text-4xl mb-4 text-zeal-blue"></i>
+          <h2 className="text-xl font-bold font-display uppercase tracking-widest text-gray-500">Loading Cart...</h2>
         </div>
-        <Footer />
       </main>
     );
   }
@@ -131,13 +122,9 @@ export default function Cart() {
 
     try {
       if (splitMode) {
-        // Build groups from expandedItems (each unit is qty=1)
         const groups = buildGroupMap(expandedItems);
-
-        // Merge identical items within each group back to quantity > 1
         for (const [gId, groupUnits] of Object.entries(groups)) {
           if (groupUnits.length === 0) continue;
-          // Consolidate units with same cartItemId
           const merged = {};
           groupUnits.forEach(unit => {
             if (!merged[unit.cartItemId]) merged[unit.cartItemId] = { ...unit, quantity: 0 };
@@ -159,7 +146,6 @@ export default function Cart() {
           });
         }
       } else {
-        // Single combined order
         await addDoc(collection(db, "orders"), {
           userId: user.uid,
           items: items,
@@ -186,13 +172,14 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <main>
-        <div className="container" style={{ padding: '6rem 1rem 4rem', minHeight: '60vh', textAlign: 'center' }}>
-          <h1 style={{ marginBottom: '2rem', fontFamily: 'var(--font-display)' }}>Your Cart</h1>
-          <div style={{ padding: '4rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-            <p style={{ color: 'var(--muted-fg)', marginBottom: '1.5rem', fontSize: '1.1rem' }}>Your shopping bag is empty.</p>
-            <Link to="/products" className="buy-once-btn" style={{ display: 'inline-flex', textDecoration: 'none' }}>Continue Shopping</Link>
-          </div>
+      <main className="min-h-screen flex flex-col bg-gray-50">
+        <div className="flex-grow flex flex-col items-center justify-center px-4 py-12 text-center">
+          <ShoppingBag size={64} className="text-gray-300 mb-6 mx-auto" />
+          <h1 className="text-3xl font-display font-black uppercase tracking-wider text-gray-900 mb-4">Your Bag is Empty</h1>
+          <p className="text-gray-500 font-medium mb-8">Looks like you haven't added anything yet.</p>
+          <Link to="/products" className="inline-block bg-zeal-red hover:bg-red-800 text-white font-bold py-3 px-8 rounded-sm uppercase tracking-wider text-sm transition-colors shadow-md">
+            Start Shopping
+          </Link>
         </div>
         <Footer />
       </main>
@@ -200,78 +187,75 @@ export default function Cart() {
   }
 
   return (
-    <main>
-      <div className="container" style={{ padding: '4rem 1rem', minHeight: '60vh' }}>
-        <Link to="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--muted-fg)', marginBottom: '2rem', textDecoration: 'none', fontWeight: '500' }}>
+    <main className="min-h-screen flex flex-col bg-gray-50">
+      <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <Link to="/products" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-zeal-red uppercase tracking-wider transition-colors mb-8">
           <ArrowLeft size={16} /> Continue Shopping
         </Link>
 
-        <h1 style={{ marginBottom: '2rem', fontFamily: 'var(--font-display)', fontSize: '2rem' }}>Shopping Bag</h1>
+        <h1 className="text-3xl font-display font-black text-gray-900 uppercase tracking-tight mb-8">Shopping Bag</h1>
 
-        {error && <div style={{ color: 'red', background: '#fee2e2', padding: '1rem', borderRadius: '8px', marginBottom: '2rem' }}>{error}</div>}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-sm mb-8 text-sm font-medium flex items-center gap-2">
+            <i className="fas fa-exclamation-circle text-red-500"></i> {error}
+          </div>
+        )}
 
-        <div className="cart-layout">
-
-          {/* Conflict Warning Banner */}
-          {(() => {
-            const hasWeekly = items.some(i => i.paymentChoice === 'installment' && i.paymentFrequency === 'weekly');
-            const hasMonthly = items.some(i => i.paymentChoice === 'installment' && i.paymentFrequency === 'monthly');
-            const hasInstallment = items.some(i => i.paymentChoice === 'installment');
-            const hasMultipleInstallments = items.filter(i => i.paymentChoice === 'installment').length > 1;
-            // Top blue banner removed as per user request to place it inside the product.
-            return null;
-          })()}
-
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          
           {/* Items List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="w-full lg:flex-grow flex flex-col gap-4">
             {items.map((item) => (
-              <div key={item.cartItemId} className="cart-item-card">
-                <img src={item.img} alt={item.name} loading="lazy" decoding="async" className="cart-item-img" />
+              <div key={item.cartItemId} className="bg-white border border-gray-200 rounded-sm p-4 sm:p-5 flex flex-col sm:flex-row gap-5 hover:border-gray-300 transition-colors shadow-sm">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 border border-gray-100 rounded flex items-center justify-center flex-shrink-0 p-2 relative">
+                  <img src={item.img} alt={item.name} loading="lazy" decoding="async" className="max-w-full max-h-full object-contain mix-blend-multiply" />
+                </div>
 
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.25rem' }}>{item.name}</h3>
-                      <p style={{ color: 'var(--muted-fg)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Length: {item.length}</p>
+                <div className="flex flex-col flex-grow">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="pr-4">
+                      <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-tight mb-1">{item.name}</h3>
+                      <p className="text-xs font-medium text-gray-500">Length: {item.length}</p>
                     </div>
-
-                    <button onClick={() => removeFromCart(item.cartItemId)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }} aria-label="Remove item">
-                      <Trash2 size={20} />
+                    <button onClick={() => removeFromCart(item.cartItemId)} className="text-gray-400 hover:text-red-500 transition-colors p-1" aria-label="Remove item">
+                      <Trash2 size={18} />
                     </button>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mt-auto gap-4">
+                    <div className="flex flex-col gap-3 w-full sm:w-auto">
                       {item.paymentChoice === 'installment' ? (
                         items.filter(i => i.paymentChoice === 'installment').length > 1 ? (
-                          <div style={{ color: '#1e40af', fontSize: '0.75rem', background: '#eff6ff', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #bfdbfe', maxWidth: '300px', lineHeight: '1.4' }}>
-                            <span style={{ display: 'block', fontWeight: '700', marginBottom: '0.15rem' }}>ℹ️ Multiple Installment Items Detected</span>
-                            Your installment payments will be combined into a single schedule and calculated together during order review.
+                          <div className="bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-medium p-2 rounded max-w-xs leading-relaxed">
+                            <strong className="block mb-0.5"><i className="fas fa-info-circle mr-1"></i> Multiple Installment Items Detected</strong>
+                            Payments will be combined into a single schedule during order review.
                           </div>
                         ) : (
-                          <div style={{ color: 'var(--muted-fg)', fontSize: '0.85rem', fontWeight: '500' }}>
-                            Installment: {item.paymentFrequency === 'weekly' ? item.installments * 4 + ' Weeks' : item.installments + ' Months'}
-                          </div>
+                          <span className="inline-block bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-wider w-max">
+                            {item.paymentFrequency === 'weekly' ? item.installments * 4 + ' Weekly Payments' : item.installments + ' Monthly Payments'}
+                          </span>
                         )
                       ) : (
-                        <div style={{ color: 'var(--muted-fg)', fontSize: '0.85rem', fontWeight: '500' }}>
+                        <span className="inline-block bg-green-50 text-green-700 border border-green-100 text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-wider w-max">
                           Full Payment
-                        </div>
+                        </span>
                       )}
-                      <div className="cart-qty-ctrl">
-                        <button onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} style={{ background: 'none', border: 'none', padding: '0.25rem 0.75rem', cursor: 'pointer', fontSize: '1.2rem' }}>-</button>
-                        <span style={{ fontWeight: '500' }}>{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} style={{ background: 'none', border: 'none', padding: '0.25rem 0.75rem', cursor: 'pointer', fontSize: '1.2rem' }}>+</button>
+                      
+                      <div className="flex items-center border border-gray-200 rounded-sm w-max bg-gray-50">
+                        <button onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} className="px-3 py-1 hover:bg-gray-200 text-gray-600 font-bold transition-colors">-</button>
+                        <span className="px-3 py-1 font-bold text-sm bg-white border-x border-gray-200 min-w-[40px] text-center">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} className="px-3 py-1 hover:bg-gray-200 text-gray-600 font-bold transition-colors">+</button>
                       </div>
                     </div>
 
-                    <div style={{ textAlign: 'right' }}>
+                    <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-0 border-gray-100 pt-3 sm:pt-0">
                       {item.paymentChoice === 'installment' ? (
-                        <>
-                          <div style={{ fontSize: '1.1rem', fontWeight: '700' }}>{fmt((item.periodPayment || item.monthlyPayment || 0) * item.quantity)} <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--muted-fg)' }}>/ {item.paymentFrequency === 'weekly' ? 'wk' : 'mo'}</span></div>
-                        </>
+                        <div>
+                          <div className="font-display font-black text-lg text-gray-900">{fmt((item.periodPayment || item.monthlyPayment || 0) * item.quantity)}</div>
+                          <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">/ {item.paymentFrequency === 'weekly' ? 'Week' : 'Month'}</div>
+                        </div>
                       ) : (
-                        <div style={{ fontSize: '1.1rem', fontWeight: '700' }}>{fmt(item.price * item.quantity)}</div>
+                        <div className="font-display font-black text-lg text-gray-900">{fmt(item.price * item.quantity)}</div>
                       )}
                     </div>
                   </div>
@@ -280,39 +264,40 @@ export default function Cart() {
             ))}
           </div>
 
-          {/* Checkout Summary */}
-          <div>
-            <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)', position: 'sticky', top: '100px' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>Delivery Information</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-                <input type="text" placeholder="Full Address" value={deliveryInfo.address} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                  <input type="text" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} style={{ flex: '1 1 120px', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
-                  <input type="text" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} style={{ flex: '1 1 120px', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
+          {/* Checkout Summary Sidebar */}
+          <div className="w-full lg:w-[400px] flex-shrink-0">
+            <div className="bg-white border border-gray-200 rounded-sm p-6 lg:p-8 shadow-sm sticky top-8">
+              
+              <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3">Delivery Information</h2>
+              <div className="flex flex-col gap-3 mb-8">
+                <input type="text" placeholder="Full Address" value={deliveryInfo.address} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                <div className="flex gap-3">
+                  <input type="text" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                  <input type="text" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
                 </div>
-                <input type="tel" placeholder="Phone Number" value={deliveryInfo.phone} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none' }} />
-                <textarea placeholder="Additional Instructions (Optional)" value={deliveryInfo.instructions} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, instructions: e.target.value })} style={{ padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border)', outline: 'none', resize: 'vertical', minHeight: '80px' }}></textarea>
+                <input type="tel" placeholder="Phone Number" value={deliveryInfo.phone} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                <textarea placeholder="Additional Instructions (Optional)" value={deliveryInfo.instructions} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, instructions: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors resize-y min-h-[80px]"></textarea>
               </div>
 
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>Order Summary</h2>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: 'var(--muted-fg)' }}>
+              <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3">Order Summary</h2>
+              
+              <div className="flex justify-between items-center text-sm font-medium text-gray-500 mb-3">
                 <span>Subtotal ({items.reduce((a, b) => a + b.quantity, 0)} items)</span>
-                <span>{fmt(totalToPayNow)}</span>
+                <span className="text-gray-900 font-bold">{fmt(totalToPayNow)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', color: 'var(--muted-fg)' }}>
+              <div className="flex justify-between items-center text-sm font-medium text-gray-500 mb-6">
                 <span>Shipping</span>
                 <span>Calculated at checkout</span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', margin: '1.5rem 0', paddingTop: '1.5rem', borderTop: '1px dashed var(--border)', fontSize: '1.25rem', fontWeight: '700' }}>
-                <span>Total Due Today</span>
-                <span>{fmt(totalToPayNow)}</span>
+              <div className="flex justify-between items-end border-t border-gray-200 pt-4 mb-6">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-widest">Total Due Today</span>
+                <span className="text-2xl font-display font-black text-zeal-red">{fmt(totalToPayNow)}</span>
               </div>
 
               {!user && (
-                <div style={{ background: '#fef3c7', color: '#92400e', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-                  You must be logged in to checkout.
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-sm mb-6 text-sm font-bold flex items-center gap-2">
+                  <i className="fas fa-exclamation-triangle"></i> You must be logged in to checkout.
                 </div>
               )}
 
@@ -332,13 +317,13 @@ export default function Cart() {
                   setShowPreview(true);
                 }}
                 disabled={loading}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', background: 'var(--primary)', color: 'white', border: 'none', padding: '1rem', borderRadius: '8px', fontSize: '1.1rem', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
+                className="w-full bg-zeal-dark hover:bg-black text-white font-black py-4 rounded-sm text-sm uppercase tracking-widest transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
               >
                 Review & Confirm Order
               </button>
 
-              <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--muted-fg)' }}>
-                Secure checkout (Test Mode).
+              <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <i className="fas fa-lock"></i> Secure Checkout (Test Mode)
               </div>
             </div>
           </div>
@@ -349,217 +334,218 @@ export default function Cart() {
 
       {/* Confirm Order Preview Modal */}
       {showPreview && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', backdropFilter: 'blur(4px)' }}>
-          <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', fontFamily: 'var(--font-display)', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>Confirm Your Order</h2>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-sm w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             
-            {(() => {
-              return (
-                <>
-                  <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '0.85rem', fontWeight: '700', marginBottom: '0.5rem', color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Delivery Info</h3>
-                    <p style={{ fontWeight: '600', fontSize: '0.95rem' }}>{deliveryInfo.address}</p>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--foreground)' }}>{deliveryInfo.city}, {deliveryInfo.state}</p>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--foreground)' }}>Phone: {deliveryInfo.phone}</p>
-                  </div>
+            <div className="bg-zeal-dark text-white px-6 py-4 flex justify-between items-center flex-shrink-0">
+              <h2 className="text-lg font-display font-black uppercase tracking-wider m-0">Confirm Your Order</h2>
+              <button onClick={() => setShowPreview(false)} className="text-gray-400 hover:text-white transition-colors">
+                <i className="fas fa-times text-lg"></i>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-grow">
+              {/* Delivery Info */}
+              <div className="mb-8 border border-gray-200 rounded-sm p-4 bg-gray-50">
+                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <i className="fas fa-map-marker-alt"></i> Delivery Info
+                </h3>
+                <p className="font-bold text-sm text-gray-800 mb-1">{deliveryInfo.address}</p>
+                <p className="text-xs font-medium text-gray-500 mb-1">{deliveryInfo.city}, {deliveryInfo.state}</p>
+                <p className="text-xs font-medium text-gray-500">Phone: {deliveryInfo.phone}</p>
+              </div>
 
-                  <div style={{ marginBottom: '1.5rem' }}>
-                    {(() => {
-                      // Detect conflicts in single-order (non-split) mode
-                      const installmentSigs = items
-                        .filter(i => i.paymentChoice !== 'full')
-                        .map(i => `${i.paymentFrequency}-${i.installments}`);
-                      const hasSingleOrderConflict = new Set(installmentSigs).size > 1;
+              <div className="mb-4">
+                {(() => {
+                  const installmentSigs = items
+                    .filter(i => i.paymentChoice !== 'full')
+                    .map(i => `${i.paymentFrequency}-${i.installments}`);
+                  const hasSingleOrderConflict = new Set(installmentSigs).size > 1;
 
-                      return (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                          <h3 style={{ fontSize: '0.85rem', fontWeight: '700', margin: 0, color: 'var(--muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Order Items</h3>
-                          <button
-                            onClick={() => { splitMode ? exitSplitMode() : enterSplitMode(); }}
-                            style={{
-                              padding: '0.4rem 0.8rem', fontSize: '0.78rem',
-                              background: splitMode ? 'var(--muted)' : hasSingleOrderConflict ? '#dc2626' : 'var(--primary)',
-                              color: splitMode ? 'var(--foreground)' : 'white',
-                              borderRadius: '4px', border: 'none', cursor: 'pointer', fontWeight: '700'
-                            }}
-                          >
-                            {splitMode ? '← Merge into Single Order' : hasSingleOrderConflict ? '⚠️ Resolve Conflicting Orders' : 'Split into Multiple Orders'}
-                          </button>
-                        </div>
-                      );
-                    })()}
+                  return (
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b border-gray-100 pb-3">
+                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <i className="fas fa-box"></i> Order Items
+                      </h3>
+                      <button
+                        onClick={() => { splitMode ? exitSplitMode() : enterSplitMode(); }}
+                        className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-sm transition-colors ${splitMode ? 'bg-gray-200 text-gray-600 hover:bg-gray-300' : hasSingleOrderConflict ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}
+                      >
+                        {splitMode ? '← Merge into Single Order' : hasSingleOrderConflict ? '⚠️ Resolve Conflicting Orders' : 'Split into Multiple Orders'}
+                      </button>
+                    </div>
+                  );
+                })()}
 
-                    {splitMode ? (() => {
-                      const groupMap = buildGroupMap(expandedItems);
-                      const conflicts = getGroupConflicts(groupMap);
-                      const hasAnyConflict = Object.keys(conflicts).length > 0;
+                {splitMode ? (() => {
+                  const groupMap = buildGroupMap(expandedItems);
+                  const conflicts = getGroupConflicts(groupMap);
+                  const hasAnyConflict = Object.keys(conflicts).length > 0;
 
-                      return (
-                        <>
-                          {Object.entries(groupMap).sort(([a],[b]) => Number(a)-Number(b)).map(([gId, groupUnits]) => {
-                            const conflict = conflicts[gId];
-                            const hasConflict = !!conflicts[gId];
-                            const borderColor = hasConflict ? '#f87171' : 'var(--border)';
-                            return (
-                              <div key={gId} style={{ marginBottom: '1rem', border: `1.5px solid ${borderColor}`, borderRadius: '8px' }}>
-                                <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: hasConflict ? '#fef2f2' : 'transparent' }}>
-                                  <strong style={{ fontSize: '1rem', color: hasConflict ? '#991b1b' : 'var(--foreground)' }}>Order {gId}</strong>
-                                  {groupUnits.some(u => u.paymentChoice !== 'full') && (
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                      <button
-                                        onClick={() => {
-                                          const firstSig = groupUnits.find(u => u.paymentChoice !== 'full');
-                                          if (!firstSig) return;
-                                          const targetFreq = firstSig.paymentFrequency;
-                                          const targetDur = firstSig.installments;
-                                          setExpandedItems(prev => prev.map(unit => {
-                                            if ((itemGroups[unit.splitId] || 1) === Number(gId) && unit.paymentChoice !== 'full') {
-                                              const newPeriodPayment = recalcPeriodPayment(unit, targetFreq, targetDur);
-                                              return { ...unit, paymentFrequency: targetFreq, installments: targetDur, periodPayment: newPeriodPayment };
-                                            }
-                                            return unit;
-                                          }));
+                  return (
+                    <>
+                      {Object.entries(groupMap).sort(([a],[b]) => Number(a)-Number(b)).map(([gId, groupUnits]) => {
+                        const conflict = conflicts[gId];
+                        const hasConflict = !!conflicts[gId];
+                        return (
+                          <div key={gId} className={`mb-6 border rounded-sm overflow-hidden ${hasConflict ? 'border-red-300' : 'border-gray-200'}`}>
+                            <div className={`px-4 py-3 flex justify-between items-center border-b ${hasConflict ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                              <strong className={`text-sm font-black uppercase tracking-wider ${hasConflict ? 'text-red-700' : 'text-gray-900'}`}>Order {gId}</strong>
+                              {groupUnits.some(u => u.paymentChoice !== 'full') && (
+                                <button
+                                  onClick={() => {
+                                    const firstSig = groupUnits.find(u => u.paymentChoice !== 'full');
+                                    if (!firstSig) return;
+                                    const targetFreq = firstSig.paymentFrequency;
+                                    const targetDur = firstSig.installments;
+                                    setExpandedItems(prev => prev.map(unit => {
+                                      if ((itemGroups[unit.splitId] || 1) === Number(gId) && unit.paymentChoice !== 'full') {
+                                        const newPeriodPayment = recalcPeriodPayment(unit, targetFreq, targetDur);
+                                        return { ...unit, paymentFrequency: targetFreq, installments: targetDur, periodPayment: newPeriodPayment };
+                                      }
+                                      return unit;
+                                    }));
+                                  }}
+                                  className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-sm transition-colors ${hasConflict ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                >
+                                  {hasConflict ? '⚠️ Unify Plans' : 'Unify Plans'}
+                                </button>
+                              )}
+                            </div>
+                            <div className="p-4 bg-white flex flex-col gap-2">
+                            {groupUnits.map(unit => (
+                              <div key={unit.splitId} className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                                
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="text-xs font-bold text-gray-400">1×</span>
+                                  <span className="font-bold text-xs text-gray-800 truncate max-w-[150px] sm:max-w-xs">{unit.name}</span>
+                                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">({unit.paymentChoice === 'full' ? 'Full' : `${unit.installments} ${unit.paymentFrequency === 'weekly' ? 'Wks' : 'Mos'}`})</span>
+                                </div>
+                                
+                                <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+                                  <span className="font-bold text-sm text-gray-900 w-24 text-right pr-2 border-r border-gray-200">{fmt(unit.paymentChoice === 'full' ? unit.price : unit.periodPayment || 0)}</span>
+                                  
+                                  <select
+                                    value={itemGroups[unit.splitId] || 1}
+                                    onChange={(e) => setItemGroups(prev => ({ ...prev, [unit.splitId]: Number(e.target.value) }))}
+                                    className="bg-white border border-gray-200 text-xs font-bold text-gray-700 rounded-sm px-2 py-1 outline-none focus:border-zeal-blue"
+                                  >
+                                    {[1,2,3,4,5].map(n => <option key={n} value={n}>Order {n}</option>)}
+                                  </select>
+
+                                  {unit.paymentChoice !== 'full' && (
+                                    <>
+                                      <select
+                                        value={unit.paymentFrequency}
+                                        onChange={(e) => {
+                                          const newFreq = e.target.value;
+                                          const newPP = recalcPeriodPayment(unit, newFreq, unit.installments);
+                                          setExpandedItems(prev => prev.map(u => u.splitId === unit.splitId ? { ...u, paymentFrequency: newFreq, periodPayment: newPP } : u));
                                         }}
-                                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', background: hasConflict ? '#ef4444' : 'var(--foreground)', color: hasConflict ? 'white' : 'var(--background)', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: '600' }}
+                                        className="bg-white border border-gray-200 text-[10px] uppercase tracking-wider font-bold text-gray-700 rounded-sm px-2 py-1 outline-none focus:border-zeal-blue"
                                       >
-                                        {hasConflict ? '⚠️ Unify Plans' : 'Unify Plans'}
-                                      </button>
-                                    </div>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                      </select>
+                                      <select
+                                        value={unit.installments}
+                                        onChange={(e) => {
+                                          const newDur = Number(e.target.value);
+                                          const newPP = recalcPeriodPayment(unit, unit.paymentFrequency, newDur);
+                                          setExpandedItems(prev => prev.map(u => u.splitId === unit.splitId ? { ...u, installments: newDur, periodPayment: newPP } : u));
+                                        }}
+                                        className="bg-white border border-gray-200 text-[10px] uppercase tracking-wider font-bold text-gray-700 rounded-sm px-2 py-1 outline-none focus:border-zeal-blue"
+                                      >
+                                        {[2,3,4,5,6].map(n => (
+                                          <option key={n} value={n}>{n} {unit.paymentFrequency === 'weekly' ? 'Wks' : 'Mos'}</option>
+                                        ))}
+                                      </select>
+                                    </>
                                   )}
                                 </div>
-                                <div style={{ padding: '1rem' }}>
-                                {groupUnits.map(unit => (
-                                  <div key={unit.splitId} style={{ marginBottom: '0.75rem', padding: '0.6rem', background: 'var(--muted)', borderRadius: '6px' }}>
-                                    {/* Item name + price row */}
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: unit.paymentChoice !== 'full' ? '0.4rem' : 0 }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0 }}>
-                                        <span style={{ fontSize: '0.85rem' }}>1×</span>
-                                        <span style={{ fontWeight: '600', fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{unit.name}</span>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--muted-fg)', whiteSpace: 'nowrap' }}>({unit.paymentChoice === 'full' ? 'Full' : `${unit.installments} ${unit.paymentFrequency === 'weekly' ? 'Wks' : 'Mos'}`})</span>
-                                      </div>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
-                                        <span style={{ fontWeight: '700', fontSize: '0.85rem' }}>{fmt(unit.paymentChoice === 'full' ? unit.price : unit.periodPayment || 0)}</span>
-                                        <select
-                                          value={itemGroups[unit.splitId] || 1}
-                                          onChange={(e) => setItemGroups(prev => ({ ...prev, [unit.splitId]: Number(e.target.value) }))}
-                                          style={{ padding: '0.2rem 0.3rem', fontSize: '0.75rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--card-bg)', color: 'var(--foreground)' }}
-                                        >
-                                          {[1,2,3,4,5].map(n => <option key={n} value={n}>Order {n}</option>)}
-                                        </select>
-                                      </div>
-                                    </div>
-                                    {/* Frequency + Duration selectors for installment items */}
-                                    {unit.paymentChoice !== 'full' && (
-                                      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                        <select
-                                          value={unit.paymentFrequency}
-                                          onChange={(e) => {
-                                            const newFreq = e.target.value;
-                                            const newPP = recalcPeriodPayment(unit, newFreq, unit.installments);
-                                            setExpandedItems(prev => prev.map(u => u.splitId === unit.splitId ? { ...u, paymentFrequency: newFreq, periodPayment: newPP } : u));
-                                          }}
-                                          style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--card-bg)', color: 'var(--foreground)', flex: '1 1 80px' }}
-                                        >
-                                          <option value="weekly">Weekly</option>
-                                          <option value="monthly">Monthly</option>
-                                        </select>
-                                        <select
-                                          value={unit.installments}
-                                          onChange={(e) => {
-                                            const newDur = Number(e.target.value);
-                                            const newPP = recalcPeriodPayment(unit, unit.paymentFrequency, newDur);
-                                            setExpandedItems(prev => prev.map(u => u.splitId === unit.splitId ? { ...u, installments: newDur, periodPayment: newPP } : u));
-                                          }}
-                                          style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--card-bg)', color: 'var(--foreground)', flex: '1 1 80px' }}
-                                        >
-                                          {[2,3,4,5,6].map(n => (
-                                            <option key={n} value={n}>{n} {unit.paymentFrequency === 'weekly' ? 'Weeks' : 'Months'}</option>
-                                          ))}
-                                        </select>
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
                               </div>
-                            </div>
-                          );
-                        })}
-
-                          {hasAnyConflict && (
-                            <div style={{ background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '0.75rem 1rem', fontSize: '0.85rem', color: '#92400e', marginBottom: '1rem' }}>
-                              ⚠️ Resolve all conflicts above before proceeding.
-                            </div>
-                          )}
-
-                          <div style={{ marginBottom: '2rem', background: 'var(--muted)', padding: '1rem', borderRadius: '8px' }}>
-                            <div style={{ fontSize: '0.85rem', color: 'var(--muted-fg)' }}>
-                              {Object.keys(groupMap).length} separate order{Object.keys(groupMap).length > 1 ? 's' : ''} will be created.
+                            ))}
                             </div>
                           </div>
+                        );
+                      })}
 
-                          <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button onClick={() => setShowPreview(false)} disabled={loading}
-                              style={{ flex: 1, padding: '0.85rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', color: 'var(--foreground)' }}>
-                              Cancel
-                            </button>
-                            <button onClick={handleCheckout} disabled={loading || hasAnyConflict}
-                              style={{ flex: 1, padding: '0.85rem', background: hasAnyConflict ? '#9ca3af' : 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: loading || hasAnyConflict ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
-                              <CreditCard size={18} />
-                              {loading ? 'Processing...' : `Place ${Object.keys(groupMap).length} Order${Object.keys(groupMap).length > 1 ? 's' : ''}`}
-                            </button>
-                          </div>
-                        </>
-                      );
-                    })() : (
-                      <>
-                        {items.map(item => (
-                          <div key={item.cartItemId} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', fontSize: '0.95rem', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <span style={{ fontWeight: '600' }}>{item.quantity}×</span>
-                              <span>{item.name} <span style={{ fontSize: '0.8rem', color: 'var(--muted-fg)' }}>({item.paymentChoice === 'full' ? 'Full' : `${item.installments} ${item.paymentFrequency === 'weekly' ? 'Wks' : 'Mos'}`})</span></span>
-                            </div>
-                            <span style={{ fontWeight: '600' }}>{fmt((item.paymentChoice === 'full' ? item.price : item.periodPayment || item.monthlyPayment) * item.quantity)}</span>
-                          </div>
-                        ))}
-
-                        <div style={{ marginBottom: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', background: 'var(--muted)', padding: '1rem', borderRadius: '8px', marginTop: '1rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.5rem' }}>
-                            <span>Total Due Today</span>
-                            <span style={{ color: 'var(--primary)' }}>{fmt(totalToPayNow)}</span>
-                          </div>
-                          {items.some(i => i.paymentChoice === 'installment') && (
-                            <div style={{ fontSize: '0.85rem', color: 'var(--muted-fg)', display: 'flex', justifyContent: 'space-between' }}>
-                              <span>Combined Installment:</span>
-                              <span>{fmt(items.reduce((acc, i) => acc + (i.paymentChoice === 'installment' ? (i.periodPayment || i.monthlyPayment) * i.quantity : 0), 0))} / {items.some(i => i.paymentFrequency === 'weekly') ? 'wk' : 'mo'}</span>
-                            </div>
-                          )}
+                      {hasAnyConflict && (
+                        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold px-4 py-3 rounded-sm mb-6 flex items-center gap-2">
+                          <i className="fas fa-exclamation-triangle text-amber-500"></i> Resolve all conflicts above before proceeding.
                         </div>
+                      )}
 
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                          <button onClick={() => setShowPreview(false)} disabled={loading}
-                            style={{ flex: 1, padding: '0.85rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', color: 'var(--foreground)' }}>
-                            Cancel
+                      <div className="bg-blue-50 border border-blue-100 p-4 rounded-sm text-xs font-bold text-blue-800 uppercase tracking-widest text-center mb-6">
+                        {Object.keys(groupMap).length} separate order{Object.keys(groupMap).length > 1 ? 's' : ''} will be created.
+                      </div>
+
+                      <div className="flex gap-4">
+                        <button onClick={() => setShowPreview(false)} disabled={loading}
+                          className="flex-1 bg-white border-2 border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-bold py-3 rounded-sm text-sm uppercase tracking-widest transition-colors">
+                          Cancel
+                        </button>
+                        <button onClick={handleCheckout} disabled={loading || hasAnyConflict}
+                          className="flex-1 bg-zeal-dark hover:bg-black text-white font-black py-3 rounded-sm text-sm uppercase tracking-widest transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                          <CreditCard size={18} />
+                          {loading ? 'Processing...' : `Place ${Object.keys(groupMap).length} Order${Object.keys(groupMap).length > 1 ? 's' : ''}`}
+                        </button>
+                      </div>
+                    </>
+                  );
+                })() : (
+                  <>
+                    <div className="flex flex-col gap-2 mb-6">
+                      {items.map(item => (
+                        <div key={item.cartItemId} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                          <div className="flex items-center gap-3 min-w-0 pr-4">
+                            <span className="font-black text-sm text-gray-400">{item.quantity}×</span>
+                            <span className="font-bold text-sm text-gray-800 truncate">{item.name}</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded-sm">
+                              {item.paymentChoice === 'full' ? 'Full' : `${item.installments} ${item.paymentFrequency === 'weekly' ? 'Wks' : 'Mos'}`}
+                            </span>
+                          </div>
+                          <span className="font-black text-sm text-gray-900 flex-shrink-0">{fmt((item.paymentChoice === 'full' ? item.price : item.periodPayment || item.monthlyPayment) * item.quantity)}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-sm p-5 mb-6">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-black text-gray-500 uppercase tracking-wider">Total Due Today</span>
+                        <span className="text-xl font-display font-black text-zeal-red">{fmt(totalToPayNow)}</span>
+                      </div>
+                      {items.some(i => i.paymentChoice === 'installment') && (
+                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Combined Installment</span>
+                          <span className="text-sm font-bold text-zeal-blue">{fmt(items.reduce((acc, i) => acc + (i.paymentChoice === 'installment' ? (i.periodPayment || i.monthlyPayment) * i.quantity : 0), 0))} <span className="text-[10px] text-gray-400">/ {items.some(i => i.paymentFrequency === 'weekly') ? 'wk' : 'mo'}</span></span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-4 mt-8">
+                      <button onClick={() => setShowPreview(false)} disabled={loading}
+                        className="flex-1 bg-white border-2 border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-bold py-3 rounded-sm text-sm uppercase tracking-widest transition-colors">
+                        Cancel
+                      </button>
+                      {(() => {
+                        const installmentSigs = items
+                          .filter(i => i.paymentChoice !== 'full')
+                          .map(i => `${i.paymentFrequency}-${i.installments}`);
+                        const hasSingleOrderConflict = new Set(installmentSigs).size > 1;
+                        return (
+                          <button onClick={hasSingleOrderConflict ? enterSplitMode : handleCheckout} disabled={loading}
+                            className={`flex-1 text-white font-black py-3 rounded-sm text-sm uppercase tracking-widest transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 ${hasSingleOrderConflict ? 'bg-amber-600 hover:bg-amber-700' : 'bg-zeal-red hover:bg-red-800'}`}>
+                            {hasSingleOrderConflict ? <i className="fas fa-exclamation-triangle"></i> : <CreditCard size={18} />}
+                            {loading ? 'Processing...' : hasSingleOrderConflict ? 'Resolve Conflicts' : 'Proceed to Pay'}
                           </button>
-                          {(() => {
-                            const installmentSigs = items
-                              .filter(i => i.paymentChoice !== 'full')
-                              .map(i => `${i.paymentFrequency}-${i.installments}`);
-                            const hasSingleOrderConflict = new Set(installmentSigs).size > 1;
-                            return (
-                              <button onClick={hasSingleOrderConflict ? enterSplitMode : handleCheckout} disabled={loading}
-                                style={{ flex: 1, padding: '0.85rem', background: hasSingleOrderConflict ? '#dc2626' : 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', boxShadow: hasSingleOrderConflict ? 'none' : '0 4px 12px rgba(236, 72, 153, 0.2)' }}>
-                                <CreditCard size={18} />
-                                {loading ? 'Processing...' : hasSingleOrderConflict ? '⚠️ Resolve Conflicts First' : 'Proceed to Pay'}
-                              </button>
-                            );
-                          })()}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </>
-              );
-            })()}
+                        );
+                      })()}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -571,20 +557,23 @@ export default function Cart() {
 
         if (conflict && !conflictDismissed) {
           return (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', backdropFilter: 'blur(4px)' }}>
-              <div style={{ background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '400px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+            <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-sm w-full max-w-md p-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+                <div className="flex gap-4 items-start mb-6">
+                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-500 text-lg">
+                    <i className="fas fa-exclamation-triangle"></i>
+                  </div>
                   <div>
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: '700', color: '#92400e' }}>Multiple Payment Plans Detected</h3>
-                    <p style={{ fontSize: '0.9rem', color: '#78350f', lineHeight: '1.5' }}>
-                      Your cart contains a mix of different payment plans. During order review, you can choose to merge these into a single combined order, or split them into separate orders to maintain their distinct payment schedules.
+                    <h3 className="text-lg font-black text-gray-900 leading-tight mb-2">Multiple Payment Plans</h3>
+                    <p className="text-sm font-medium text-gray-500 leading-relaxed">
+                      Your bag contains a mix of different payment plans. During order review, you can choose to merge these into a single combined order, or split them into separate orders to maintain their distinct schedules.
                     </p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setConflictDismissed(true)}
-                  style={{ width: '100%', padding: '0.85rem', background: '#f59e0b', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-sm text-sm uppercase tracking-widest transition-colors shadow-sm"
                 >
                   I Understand
                 </button>
