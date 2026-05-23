@@ -109,7 +109,7 @@ export default function Profile() {
     return (
       <main className="min-h-screen flex flex-col bg-gray-50">
         <div className="flex-grow flex flex-col items-center justify-center text-gray-400">
-          <Clock size={40} className="mb-4 animate-pulse text-zeal-blue" />
+          <Clock size={40} className="mb-4 animate-pulse text-brandLime" />
           <h2 className="text-xl font-bold font-display uppercase tracking-widest text-gray-500">Loading Profile...</h2>
         </div>
       </main>
@@ -154,7 +154,7 @@ export default function Profile() {
         
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-display font-black text-gray-900 uppercase tracking-tight mb-2">My Account</h1>
+          <h1 className="text-4xl font-display font-black text-brandDark uppercase tracking-tight mb-2">My Account</h1>
           <p className="text-gray-500 font-medium text-sm">
             Welcome back{profileData ? `, ${profileData.firstName}` : ''}!
           </p>
@@ -170,19 +170,19 @@ export default function Profile() {
 
           {/* Stats Overview */}
           {!isAdmin && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {[
-                { label: 'Total Orders', value: orders.length, icon: <Package size={20} />, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
-                { label: 'Amount Paid', value: fmt(totalSpent), icon: <CheckCircle size={20} />, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100' },
-                { label: 'Pending Balance', value: fmt(pendingBalance), icon: <Clock size={20} />, color: pendingBalance > 0 ? 'text-amber-600' : 'text-green-600', bg: pendingBalance > 0 ? 'bg-amber-50' : 'bg-green-50', border: pendingBalance > 0 ? 'border-amber-100' : 'border-green-100' },
+                { label: 'Total Orders', value: orders.length, icon: <Package size={24} />, color: 'text-white', bg: 'bg-brandDark', border: 'border-gray-800' },
+                { label: 'Amount Paid', value: fmt(totalSpent), icon: <CheckCircle size={24} />, color: 'text-brandBlack', bg: 'bg-brandLime', border: 'border-brandLime/50' },
+                { label: 'Pending Balance', value: fmt(pendingBalance), icon: <Clock size={24} />, color: pendingBalance > 0 ? 'text-brandDark' : 'text-white', bg: pendingBalance > 0 ? 'bg-amber-400' : 'bg-brandDark', border: pendingBalance > 0 ? 'border-amber-500' : 'border-gray-800' },
               ].map(stat => (
-                <div key={stat.label} className={`bg-white rounded-sm border ${stat.border} p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow`}>
-                  <div className={`${stat.bg} ${stat.color} p-3 rounded-full flex-shrink-0`}>
+                <div key={stat.label} className={`bg-white rounded-2xl border ${stat.border} p-6 flex items-center gap-5 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1`}>
+                  <div className={`${stat.bg} ${stat.color} p-4 rounded-xl shadow-inner flex-shrink-0`}>
                     {stat.icon}
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{stat.label}</div>
-                    <div className="font-black text-xl text-gray-900 font-display">{stat.value}</div>
+                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">{stat.label}</div>
+                    <div className="font-black text-2xl text-brandDark tracking-tighter">{stat.value}</div>
                   </div>
                 </div>
               ))}
@@ -190,33 +190,34 @@ export default function Profile() {
           )}
 
           {/* Personal Info */}
-          <div className="bg-white rounded-sm border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-zeal-dark px-6 py-4 border-b border-gray-700">
-              <h2 className="text-lg font-black text-white uppercase tracking-wider font-display">
-                Personal Information
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden group">
+            <div className="bg-gradient-to-r from-brandDark to-brandBlack px-8 py-5 border-b border-gray-800 flex justify-between items-center relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
+              <h2 className="text-sm font-black text-brandLime uppercase tracking-widest relative z-10 flex items-center gap-3">
+                <i className="fa-solid fa-id-card text-lg"></i> Personal Information
               </h2>
             </div>
-            <div className="p-6">
+            <div className="p-8">
               {profileData ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                   {[
                     { label: 'Full Name', value: `${profileData.firstName || 'Admin'} ${profileData.lastName || ''}`, icon: 'fa-user' },
                     { label: 'Email Address', value: profileData.email || user.email, icon: 'fa-envelope' },
                     { label: 'Phone Number', value: profileData.phone || 'Not provided', icon: 'fa-phone' },
                     !isAdmin ? { label: 'Account Status', value: profileData.isEmailVerified ? 'Verified' : 'Unverified', icon: 'fa-shield-alt', special: !profileData.isEmailVerified } : null,
                   ].filter(Boolean).map(field => (
-                    <div key={field.label} className="flex flex-col">
-                      <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+                    <div key={field.label} className="flex flex-col bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
                         <i className={`fas ${field.icon}`}></i> {field.label}
                       </div>
-                      <div className={`font-bold text-sm ${field.special ? 'text-amber-500' : 'text-gray-800'}`}>
-                        {field.value} {field.special === false && <i className="fas fa-check-circle text-green-500 ml-1"></i>}
+                      <div className={`font-black text-sm ${field.special ? 'text-amber-500' : 'text-brandDark'}`}>
+                        {field.value} {field.special === false && <i className="fas fa-check-circle text-brandLime ml-1 drop-shadow-sm"></i>}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm font-medium">No profile details found.</p>
+                <p className="text-gray-500 text-sm font-bold">No profile details found.</p>
               )}
             </div>
           </div>
@@ -237,13 +238,13 @@ export default function Profile() {
                         placeholder="Search orders..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-sm text-sm font-medium focus:border-zeal-blue outline-none transition-colors"
+                        className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:border-brandLime outline-none transition-colors"
                       />
                     </div>
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="bg-gray-50 border border-gray-200 rounded-sm px-3 py-2 text-sm font-medium text-gray-700 outline-none focus:border-zeal-blue transition-colors flex-grow md:flex-grow-0"
+                      className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 outline-none focus:border-brandLime transition-colors flex-grow md:flex-grow-0"
                     >
                       <option>All Orders</option>
                       <option>Completed</option>
@@ -271,7 +272,7 @@ export default function Profile() {
                   <div className="text-center py-12">
                     <ShoppingBag size={48} className="mx-auto text-gray-300 mb-4" />
                     <p className="text-gray-500 font-medium mb-6">You haven't placed any orders matching these criteria.</p>
-                    <Link to="/products" className="inline-block bg-zeal-red text-white font-bold py-3 px-8 rounded-sm uppercase tracking-wider text-sm hover:bg-red-800 transition-colors shadow-md">
+                    <Link to="/products" className="inline-block bg-brandLime text-brandBlack font-bold py-3 px-8 rounded-xl uppercase tracking-wider text-sm hover:bg-white border-2 border-transparent hover:border-brandLime transition-colors shadow-md">
                       Start Shopping
                     </Link>
                   </div>
@@ -401,14 +402,14 @@ export default function Profile() {
 
                                   {/* Progress Bar */}
                                   <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mb-2">
-                                    <div className={`h-full transition-all duration-1000 ${isComplete ? 'bg-green-500' : 'bg-zeal-blue'}`} style={{ width: `${pct}%` }}></div>
+                                    <div className="h-full transition-all duration-1000 ${isComplete ? 'bg-brandGreen' : 'bg-brandLime'}" style={{ width: `${pct}%` }}></div>
                                   </div>
                                   
                                   <div className="text-[11px] font-bold text-center uppercase tracking-wider mb-6">
                                     {isComplete ? (
                                       <span className="text-green-600"><i className="fas fa-check-circle mr-1"></i> Fully paid</span>
                                     ) : (
-                                      <span className="text-gray-500">{pct}% paid <span className="mx-1">•</span> Balance: <span className="text-zeal-red">{fmt(balance)}</span></span>
+                                      <span className="text-gray-500">{pct}% paid <span className="mx-1">•</span> Balance: <span className="text-brandDark font-bold">{fmt(balance)}</span></span>
                                     )}
                                   </div>
 
@@ -427,7 +428,7 @@ export default function Profile() {
                                       <button
                                         onClick={() => handleContinuePayment(order, defaultCustomAmount)}
                                         disabled={loading}
-                                        className="w-full bg-zeal-blue hover:bg-blue-900 text-white font-bold py-3 px-4 rounded-sm text-sm uppercase tracking-wider transition-colors disabled:opacity-70 shadow-md flex items-center justify-center gap-2"
+                                        className="w-full bg-brandDark hover:bg-brandBlack text-brandLime font-bold py-3 px-4 rounded-xl text-sm uppercase tracking-wider transition-colors disabled:opacity-70 shadow-md flex items-center justify-center gap-2"
                                       >
                                         {loading ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-credit-card"></i>}
                                         Pay {fmt(defaultCustomAmount)}
@@ -448,13 +449,13 @@ export default function Profile() {
                                             onChange={(e) => setCustomAmounts(prev => ({ ...prev, [order.id]: Number(e.target.value) }))}
                                             max={balance}
                                             min={1}
-                                            className="w-full pl-7 pr-3 py-2.5 bg-white border border-gray-300 rounded-sm text-sm font-bold focus:border-zeal-blue outline-none transition-colors"
+                                            className="bg-white border border-gray-300 rounded-lg text-sm font-bold focus:border-brandLime outline-none transition-colors"
                                           />
                                         </div>
                                         <button
                                           onClick={() => handleContinuePayment(order, currentCustomAmount)}
                                           disabled={loading || currentCustomAmount <= 0 || currentCustomAmount > balance}
-                                          className="bg-gray-800 hover:bg-black text-white px-4 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+                                          className="bg-brandLime text-brandBlack px-4 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 hover:bg-white border-2 border-transparent hover:border-brandLime"
                                         >
                                           Pay
                                         </button>

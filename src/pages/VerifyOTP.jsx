@@ -213,19 +213,24 @@ export default function VerifyOTP() {
           
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link to="/" className="inline-block">
-              <div className="font-display text-4xl font-black tracking-tighter">
-                <span className="text-zeal-blue">ZEAL</span><span className="text-zeal-red">MART</span>
+            <Link to="/" className="inline-block group">
+              <div className="flex flex-col items-center">
+                  <div className="relative bg-brandBlack p-3 rounded-full border border-brandLime/50 mb-3 group-hover:border-brandLime transition-all duration-300">
+                      <i className="fa-solid fa-solar-panel text-brandLime text-2xl"></i>
+                  </div>
+                  <span className="text-3xl font-black tracking-tight text-brandDark">
+                      MAYJAY <span className="text-brandLime">CONCEPTS</span>
+                  </span>
+                  <span className="text-[10px] uppercase tracking-widest text-gray-500 mt-1">Automation & Energy</span>
               </div>
             </Link>
-            <p className="text-gray-500 text-sm mt-2 font-medium">Marketplace of the Nation</p>
           </div>
 
           {/* Card */}
-          <div className="bg-white border border-gray-200 shadow-lg rounded-sm overflow-hidden">
+          <div className="bg-white border border-gray-200 shadow-xl rounded-xl overflow-hidden">
             {/* Card Header */}
-            <div className="bg-zeal-dark px-8 py-6 text-white text-center">
-              <h1 className="text-2xl font-black uppercase tracking-wide font-display">Verify Your Email</h1>
+            <div className="bg-brandDark px-8 py-6 text-white text-center">
+              <h1 className="text-2xl font-black uppercase tracking-wide">Verify Your Email</h1>
               <p className="text-gray-400 text-sm font-medium mt-1">We sent a 6-digit code to <strong>{email}</strong></p>
             </div>
 
@@ -237,7 +242,7 @@ export default function VerifyOTP() {
               )}
 
               {timeLeft !== null && (
-                <div className={`mb-6 font-black text-xl tracking-wider ${timeLeft === 0 ? 'text-red-500' : 'text-zeal-blue'}`}>
+                <div className={`mb-6 font-black text-xl tracking-wider ${timeLeft === 0 ? 'text-red-500' : 'text-brandDark'}`}>
                   {formatTime(timeLeft)}
                 </div>
               )}
@@ -253,12 +258,12 @@ export default function VerifyOTP() {
                       onChange={(e) => handleChange(e.target, index)}
                       onKeyDown={(e) => handleKeyDown(e, index)}
                       onFocus={(e) => e.target.select()}
-                      className="w-12 h-14 text-2xl text-center border-2 border-gray-200 focus:border-zeal-blue outline-none rounded-sm font-black bg-gray-50 focus:bg-white text-zeal-dark transition-all shadow-sm"
+                      className="w-12 h-14 text-2xl text-center border-2 border-gray-200 focus:border-brandLime outline-none rounded-lg font-black bg-gray-50 focus:bg-white text-brandDark transition-all shadow-sm"
                     />
                   ))}
                 </div>
 
-                <button type="submit" disabled={loading} className="w-full bg-zeal-red hover:bg-red-800 disabled:opacity-60 text-white font-black py-4 rounded-sm uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <button type="submit" disabled={loading} className="w-full bg-brandLime hover:bg-white border-2 border-transparent hover:border-brandLime disabled:opacity-60 text-brandBlack font-black py-4 rounded-xl uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                   {loading ? (
                     <><i className="fas fa-spinner fa-spin"></i> Verifying...</>
                   ) : (
@@ -273,7 +278,7 @@ export default function VerifyOTP() {
                   <button 
                     onClick={handleResend} 
                     disabled={resending}
-                    className="text-zeal-blue font-black hover:text-zeal-red transition-colors disabled:opacity-50 underline"
+                    className="text-brandDark font-black hover:text-brandLime transition-colors disabled:opacity-50 underline"
                   >
                     {resending ? 'Sending...' : 'Resend Code'}
                   </button>

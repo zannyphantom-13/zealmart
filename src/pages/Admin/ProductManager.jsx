@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Link } from 'react-router-dom';
 import {
@@ -36,7 +36,7 @@ function CategoryBadge({ category }) {
   );
 }
 
-function ProductCard({ product, onDelete }) {
+function ProductCard({ product, onDelete, onFeaturedToggle }) {
   const [hovered, setHovered] = useState(false);
   const catStyle = CATEGORY_STYLES[product.category] || defaultCat;
   const hasSale = product.pss && Number(product.pss) > 0 && Number(product.pss) < Number(product.price);
@@ -73,7 +73,7 @@ function ProductCard({ product, onDelete }) {
           padding: '3px 9px', borderRadius: 99, letterSpacing: '0.1em',
           boxShadow: '0 2px 8px rgba(245,158,11,0.4)'
         }}>
-          <Star size={9} fill="#fff" /> FEATURED
+          <Star size={9} fill="#fff" /> FEATURED {product.featuredPosition ? `#${product.featuredPosition}` : ''}
         </div>
       )}
 
@@ -165,45 +165,84 @@ function ProductCard({ product, onDelete }) {
         </div>
       </div>
 
-      {/* Action bar */}
-      <div style={{
-        padding: '12px 18px',
-        background: '#f9fafb',
-        borderTop: '1px solid #f3f4f6',
-        display: 'flex', gap: 10
-      }}>
-        <Link
-          to={`/admin/edit/${product.id}`}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '9px 0', borderRadius: 10,
-            background: hovered ? 'linear-gradient(135deg,#1d4ed8,#2563eb)' : '#eff6ff',
-            color: hovered ? '#fff' : '#1d4ed8',
-            fontSize: 12, fontWeight: 700, textDecoration: 'none',
-            border: '1.5px solid #bfdbfe',
-            transition: 'all 0.2s',
-            letterSpacing: '0.04em'
-          }}
-        >
-          <Edit size={14} /> Edit
-        </Link>
-        <button
-          onClick={() => onDelete(product.id)}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            padding: '9px 0', borderRadius: 10,
-            background: '#fff', color: '#dc2626',
-            fontSize: 12, fontWeight: 700,
-            border: '1.5px solid #fecaca',
-            cursor: 'pointer', transition: 'all 0.2s',
-            letterSpacing: '0.04em'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg,#dc2626,#ef4444)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#dc2626'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = '#fecaca'; }}
-        >
-          <Trash2 size={14} /> Delete
-        </button>
-      </div>
+       {/* Action bar */}
+       <div style={{
+         padding: '12px 18px',
+         background: '#f9fafb',
+         borderTop: '1px solid #f3f4f6',
+         display: 'flex', gap: 10
+       }}>
+         <Link
+           to={`/admin/edit/${product.id}`}
+           style={{
+             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+             padding: '9px 0', borderRadius: 10,
+             background: hovered ? '#1E1E1E' : '#eff6ff',
+             color: hovered ? '#fff' : '#1d4ed8',
+             fontSize: 12, fontWeight: 700, textDecoration: 'none',
+             border: '1.5px solid #bfdbfe',
+             transition: 'all 0.2s',
+             letterSpacing: '0.04em'
+           }}
+         >
+           <Edit size={14} /> Edit
+         </Link>
+         <button
+           onClick={() => onFeaturedToggle(product.id)}
+           style={{
+             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+             padding: '9px 0', borderRadius: 10,
+             background: product.featured ? '#dc2626' : '#10b981',
+             color: '#fff',
+             fontSize: 12, fontWeight: 700,
+             border: `1.5px solid ${product.featured ? '#fecaca' : '#bbf7d0'}`,
+             cursor: 'pointer', transition: 'all 0.2s',
+             letterSpacing: '0.04em'
+           }}
+           onMouseEnter={e => { 
+             e.currentTarget.style.background = product.featured 
+               ? 'linear-gradient(135deg,#dc2626,#ef4444)' 
+               : 'linear-gradient(135deg,#059669,#10b981)'; 
+             e.currentTarget.style.color = '#fff'; 
+             e.currentTarget.style.borderColor = product.featured 
+               ? '#dc2626' 
+               : '#059669'; 
+           }}
+           onMouseLeave={e => { 
+             e.currentTarget.style.background = product.featured ? '#dc2626' : '#10b981'; 
+             e.currentTarget.style.color = '#fff'; 
+             e.currentTarget.style.borderColor = product.featured 
+               ? '#fecaca' 
+               : '#bbf7d0'; 
+           }}
+         >
+           {product.featured ? (
+             <>
+               <Trash2 size={14} /> Unfeature
+             </>
+           ) : (
+             <>
+               <Star size={14} /> Feature
+             </>
+           )}
+         </button>
+         <button
+           onClick={() => onDelete(product.id)}
+           style={{
+             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+             padding: '9px 0', borderRadius: 10,
+             background: '#fff', color: '#dc2626',
+             fontSize: 12, fontWeight: 700,
+             border: '1.5px solid #fecaca',
+             cursor: 'pointer', transition: 'all 0.2s',
+             letterSpacing: '0.04em'
+           }}
+           onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg,#dc2626,#ef4444)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#dc2626'; }}
+           onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = '#fecaca'; }}
+         >
+           <Trash2 size={14} /> Delete
+         </button>
+       </div>
     </div>
   );
 }
@@ -231,29 +270,102 @@ export default function ProductManager() {
 
   useEffect(() => { fetchProducts(); }, []);
 
-  const handleDelete = async (id) => {
-    const product = products.find(p => p.id === id);
-    if (!product) return;
+   const handleDelete = async (id) => {
+     const product = products.find(p => p.id === id);
+     if (!product) return;
 
-    let message = `⚠️ Delete "${product.name}"?\n\n`;
-    if (product.featured) {
-      message += '🌟 This is a FEATURED product\n';
-    }
-    message += `Price: ₦${Number(product.price).toLocaleString()}\n\n`;
-    message += 'This action cannot be undone.';
+     let message = `⚠️ Delete "${product.name}"?\n\n`;
+     if (product.featured) {
+       message += '🌟 This is a FEATURED product';
+       if (product.featuredPosition) {
+         message += ` (Position #${product.featuredPosition})`;
+       }
+       message += '\n';
+     }
+     message += `Price: ₦${Number(product.price).toLocaleString()}\n\n`;
+     message += 'This action cannot be undone.';
 
-    if (window.confirm(message)) {
-      try {
-        await deleteDoc(doc(db, 'products', id));
-        setProducts(prev => prev.filter(p => p.id !== id));
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        alert('Failed to delete product. Please try again.');
-      }
-    }
-  };
+     if (window.confirm(message)) {
+       try {
+         await deleteDoc(doc(db, 'products', id));
+         setProducts(prev => prev.filter(p => p.id !== id));
+       } catch (error) {
+         console.error('Error deleting product:', error);
+         alert('Failed to delete product. Please try again.');
+       }
+     }
+   };
 
-  // Filter & sort
+   const handleUpdateProduct = async (id, updates) => {
+     try {
+       await updateDoc(doc(db, 'products', id), updates);
+       setProducts(prev => prev.map(p => p.id === id ? {...p, ...updates} : p));
+     } catch (error) {
+       console.error('Error updating product:', error);
+       alert('Failed to update product. Please try again.');
+     }
+   };
+
+   const handleFeaturedToggle = async (productId) => {
+     const product = products.find(p => p.id === productId);
+     if (!product) return;
+
+     if (product.featured) {
+       // Unfeature: just set featured to false and remove featuredPosition
+       if (window.confirm(`⚠️ Remove "${product.name}" from featured products?\n\nThis action cannot be undone.`)) {
+         try {
+           await updateDoc(doc(db, 'products', productId), {
+             featured: false,
+             featuredPosition: null
+           });
+           setProducts(prev => prev.map(p => 
+             p.id === productId ? {...p, featured: false, featuredPosition: null} : p
+           ));
+         } catch (error) {
+           console.error('Error unfeaturing product:', error);
+           alert('Failed to update product. Please try again.');
+         }
+       }
+     } else {
+       // Feature: ask for position
+       const position = window.prompt(
+         `Enter the position for "${product.name}" in the featured section (1 being the highest):\n` +
+         `Current featured products: ${products.filter(p => p.featured).length}\n` +
+         `Enter a number or leave blank for auto-position at the end.`
+       );
+       if (position === null) return; // user cancelled
+
+       let pos = position.trim();
+       if (pos === '') {
+         // auto position at the end
+         pos = products.filter(p => p.featured).length + 1;
+       } else {
+         const num = parseInt(pos, 10);
+         if (isNaN(num) || num < 1) {
+           alert('Please enter a valid positive number for position.');
+           return;
+         }
+         pos = num;
+       }
+
+       if (window.confirm(`⚠️ Feature "${product.name}" at position #${pos}?\n\nThis will change the featured position of other products if needed.\n\nThis action cannot be undone.`)) {
+         try {
+           await updateDoc(doc(db, 'products', productId), {
+             featured: true,
+             featuredPosition: pos
+           });
+           setProducts(prev => prev.map(p => 
+             p.id === productId ? {...p, featured: true, featuredPosition: pos} : p
+           ));
+         } catch (error) {
+           console.error('Error featuring product:', error);
+           alert('Failed to update product. Please try again.');
+         }
+       }
+     }
+   };
+
+   // Filter & sort
   const filtered = products
     .filter(p => {
       const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
@@ -276,7 +388,7 @@ export default function ProductManager() {
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: '#9ca3af' }}>
-      <i className="fas fa-circle-notch fa-spin" style={{ fontSize: 40, marginBottom: 16, color: '#7c3aed' }} />
+      <i className="fas fa-circle-notch fa-spin" style={{ fontSize: 40, marginBottom: 16, color: '#e8fb1d' }} />
       <h2 style={{ fontSize: 18, fontWeight: 800, color: '#6b7280', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Loading Products...</h2>
     </div>
   );
@@ -298,15 +410,15 @@ export default function ProductManager() {
           to="/admin/new"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'linear-gradient(135deg,#7c3aed,#6d28d9)',
-            color: '#fff', textDecoration: 'none',
+            background: '#e8fb1d',
+            color: '#171717', textDecoration: 'none',
             fontSize: 13, fontWeight: 800, padding: '12px 22px',
             borderRadius: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
-            boxShadow: '0 6px 20px rgba(124,58,237,0.35)',
+            boxShadow: '0 6px 20px rgba(232,251,29,0.35)',
             transition: 'all 0.2s'
           }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(124,58,237,0.45)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(124,58,237,0.35)'; }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(232,251,29,0.45)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(232,251,29,0.35)'; }}
         >
           <PlusCircle size={18} /> Add New Product
         </Link>
@@ -315,7 +427,7 @@ export default function ProductManager() {
       {/* Stats Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
         {[
-          { label: 'Total Products', value: stats.total, color: '#7c3aed', bg: '#f3f0ff', icon: '📦' },
+          { label: 'Total Products', value: stats.total, color: '#171717', bg: '#f3f0ff', icon: '📦' },
           { label: 'Featured',       value: stats.featured, color: '#d97706', bg: '#fffbeb', icon: '⭐' },
           { label: 'On Sale',        value: stats.onSale,   color: '#dc2626', bg: '#fef2f2', icon: '🏷️' },
         ].map(s => (
@@ -351,7 +463,7 @@ export default function ProductManager() {
               fontSize: 13, fontWeight: 500, color: '#111827',
               outline: 'none', background: '#f9fafb', boxSizing: 'border-box'
             }}
-            onFocus={e => { e.target.style.borderColor = '#7c3aed'; e.target.style.background = '#fff'; }}
+            onFocus={e => { e.target.style.borderColor = '#e8fb1d'; e.target.style.background = '#fff'; }}
             onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; }}
           />
         </div>
@@ -416,8 +528,8 @@ export default function ProductManager() {
               to="/admin/new"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
-                background: 'linear-gradient(135deg,#7c3aed,#6d28d9)',
-                color: '#fff', textDecoration: 'none',
+                background: '#e8fb1d',
+                color: '#171717', textDecoration: 'none',
                 fontSize: 13, fontWeight: 800, padding: '12px 24px', borderRadius: 12,
                 letterSpacing: '0.06em', textTransform: 'uppercase'
               }}
@@ -436,9 +548,9 @@ export default function ProductManager() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
             gap: 20
           }}>
-            {filtered.map(product => (
-              <ProductCard key={product.id} product={product} onDelete={handleDelete} />
-            ))}
+       {filtered.map(product => (
+         <ProductCard key={product.id} product={product} onDelete={handleDelete} onFeaturedToggle={handleFeaturedToggle} />
+       ))}
           </div>
         </>
       )}

@@ -26,10 +26,10 @@ export default function AdminLayout() {
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-50 font-sans">
       
       {/* Mobile Header Toggle */}
-      <div className="md:hidden bg-zeal-dark text-white p-4 flex justify-between items-center z-20 shadow-md">
+      <div className="md:hidden bg-brandBlack text-white p-4 flex justify-between items-center z-20 shadow-md border-b border-brandLime/20">
         <div>
-          <h2 className="font-display font-black text-lg uppercase tracking-widest text-white">
-            Admin <span className="text-zeal-red">Panel</span>
+          <h2 className="font-black text-lg uppercase tracking-widest text-white">
+            MAYJAY <span className="text-brandLime">ADMIN</span>
           </h2>
         </div>
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-gray-300 hover:text-white">
@@ -39,13 +39,13 @@ export default function AdminLayout() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed md:sticky top-0 left-0 h-screen md:h-auto z-10 w-64 bg-zeal-dark border-r border-gray-800 shadow-xl md:shadow-none
+        fixed md:sticky top-0 left-0 h-screen md:h-auto z-10 w-64 bg-brandBlack border-r border-gray-800 shadow-xl md:shadow-none
         transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out
         flex flex-col
       `}>
         <div className="p-6 hidden md:block border-b border-gray-800">
-          <h2 className="font-display font-black text-2xl uppercase tracking-widest text-white mb-1">
-            Admin <span className="text-zeal-red">Panel</span>
+          <h2 className="font-black text-2xl uppercase tracking-widest text-white mb-1">
+            MAYJAY <span className="text-brandLime">ADMIN</span>
           </h2>
           <p className="text-xs font-medium text-gray-400 break-all">{user.email}</p>
         </div>
@@ -62,10 +62,10 @@ export default function AdminLayout() {
               end={link.end}
               onClick={() => setMobileMenuOpen(false)}
               className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-sm text-sm uppercase tracking-wider font-bold transition-all
+                flex items-center gap-3 px-4 py-3 rounded-xl text-sm uppercase tracking-wider font-bold transition-all
                 ${isActive 
-                  ? 'bg-zeal-red text-white shadow-md' 
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'}
+                  ? 'bg-brandLime text-brandBlack shadow-md' 
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-brandLime'}
               `}
             >
               {link.icon} {link.label}
@@ -79,7 +79,7 @@ export default function AdminLayout() {
               await signOut(auth);
               toast.success('Signed out successfully');
             }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-sm text-sm uppercase tracking-wider font-bold bg-transparent border border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm uppercase tracking-wider font-bold bg-transparent border border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-brandLime transition-all"
           >
             <LogOut size={18} /> Sign Out
           </button>

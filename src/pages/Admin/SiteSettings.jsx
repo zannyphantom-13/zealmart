@@ -85,7 +85,7 @@ export default function SiteSettings() {
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <i className="fas fa-circle-notch fa-spin text-4xl mb-4 text-zeal-blue"></i>
+            <i className="fas fa-circle-notch fa-spin text-4xl mb-4 text-brandLime"></i>
             <h2 className="text-xl font-bold font-display uppercase tracking-widest text-gray-500">Loading Settings...</h2>
         </div>
     );
@@ -95,14 +95,14 @@ export default function SiteSettings() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-2xl font-black font-display uppercase tracking-wider text-gray-900 flex items-center gap-3">
-                        <SettingsIcon className="text-zeal-blue" /> Site Settings
+                        <SettingsIcon className="text-brandDark" /> Site Settings
                     </h1>
                     <p className="text-gray-500 text-sm font-medium mt-1">Manage Homepage content and Top Bar Messages.</p>
                 </div>
                 <button 
                     onClick={handleSave} 
                     disabled={saving}
-                    className="bg-zeal-dark hover:bg-black text-white font-black py-3 px-6 rounded-sm text-sm uppercase tracking-widest transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
+                    className="bg-brandDark hover:bg-brandBlack text-brandLime font-black py-3 px-6 rounded-xl text-sm uppercase tracking-widest transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
                 >
                     {saving ? (
                         <><i className="fas fa-circle-notch fa-spin"></i> Saving...</>
@@ -118,7 +118,7 @@ export default function SiteSettings() {
                     <div className="bg-white p-6 rounded-sm shadow-sm border border-gray-200 sticky top-8">
                         <div className="flex flex-col gap-2 mb-6 border-b border-gray-100 pb-4">
                             <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2">
-                                <MessageSquare size={16} className="text-zeal-red" /> Ticker Messages
+                                <MessageSquare size={16} className="text-brandLime" /> Ticker Messages
                             </h3>
                             <p className="text-xs text-gray-500 font-medium leading-relaxed">Messages shown in the top scrolling bar.</p>
                             <button onClick={addTicker} className="mt-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 w-full border border-gray-200">
@@ -155,7 +155,7 @@ export default function SiteSettings() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-gray-100 pb-4">
                             <div>
                                 <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2 mb-1">
-                                    <LayoutTemplate size={16} className="text-zeal-blue" /> Hero Carousel Slides
+                                    <LayoutTemplate size={16} className="text-brandDark" /> Hero Carousel Slides
                                 </h3>
                                 <p className="text-xs text-gray-500 font-medium">Add up to 7 giant slides for the homepage hero section.</p>
                             </div>
@@ -181,7 +181,7 @@ export default function SiteSettings() {
                                                 type="text" 
                                                 value={slide.title} 
                                                 onChange={(e) => updateSlide(idx, 'title', e.target.value)} 
-                                                className="w-full bg-white border border-gray-200 rounded-sm px-3 py-2.5 text-sm font-medium focus:border-zeal-blue outline-none transition-colors"
+                                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium focus:border-brandLime outline-none transition-colors"
                                                 placeholder="e.g. Upgrade Your Space"
                                             />
                                         </div>
@@ -191,7 +191,7 @@ export default function SiteSettings() {
                                                 type="text" 
                                                 value={slide.image} 
                                                 onChange={(e) => updateSlide(idx, 'image', e.target.value)} 
-                                                className="w-full bg-white border border-gray-200 rounded-sm px-3 py-2.5 text-sm font-medium focus:border-zeal-blue outline-none transition-colors"
+                                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium focus:border-brandLime outline-none transition-colors"
                                                 placeholder="https://..."
                                             />
                                         </div>
@@ -200,7 +200,7 @@ export default function SiteSettings() {
                                             <textarea 
                                                 value={slide.subtitle} 
                                                 onChange={(e) => updateSlide(idx, 'subtitle', e.target.value)} 
-                                                className="w-full bg-white border border-gray-200 rounded-sm px-3 py-2.5 text-sm font-medium focus:border-zeal-blue outline-none transition-colors resize-y min-h-[80px]"
+                                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium focus:border-brandLime outline-none transition-colors resize-y min-h-[80px]"
                                                 placeholder="A brief description of this slide..."
                                             />
                                         </div>
@@ -210,7 +210,7 @@ export default function SiteSettings() {
                                                 type="text" 
                                                 value={slide.buttonText} 
                                                 onChange={(e) => updateSlide(idx, 'buttonText', e.target.value)} 
-                                                className="w-full bg-white border border-gray-200 rounded-sm px-3 py-2.5 text-sm font-medium focus:border-zeal-blue outline-none transition-colors"
+                                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium focus:border-brandLime outline-none transition-colors"
                                                 placeholder="e.g. Shop Now"
                                             />
                                         </div>
@@ -220,7 +220,7 @@ export default function SiteSettings() {
                                                 type="text" 
                                                 value={slide.link} 
                                                 onChange={(e) => updateSlide(idx, 'link', e.target.value)} 
-                                                className="w-full bg-white border border-gray-200 rounded-sm px-3 py-2.5 text-sm font-medium focus:border-zeal-blue outline-none transition-colors"
+                                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-medium focus:border-brandLime outline-none transition-colors"
                                                 placeholder="e.g. /products"
                                             />
                                         </div>

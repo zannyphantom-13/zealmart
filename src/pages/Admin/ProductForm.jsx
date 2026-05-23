@@ -223,7 +223,7 @@ export default function ProductForm() {
 
         {/* Header banner */}
         <div style={{
-          background: 'linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%)',
+          background: '#171717',
           padding: '28px 36px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between'
         }}>
@@ -267,13 +267,13 @@ export default function ProductForm() {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
             {/* Product Name */}
-            <FieldGroup label="Product Name" icon={<Tag size={14} />} accent="#7c3aed">
+            <FieldGroup label="Product Name" icon={<Tag size={14} />} accent="#e8fb1d">
               <input
                 type="text" name="name" value={formData.name}
                 onChange={handleChange} required
                 placeholder="e.g. Samsung 65 inch 4K Smart TV"
                 style={inputStyle}
-                onFocus={e => { e.target.style.borderColor = '#7c3aed'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)'; }}
+                onFocus={e => { e.target.style.borderColor = '#e8fb1d'; e.target.style.boxShadow = '0 0 0 3px rgba(232,251,29,0.12)'; }}
                 onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none'; }}
               />
             </FieldGroup>
@@ -480,17 +480,17 @@ export default function ProductForm() {
                 width: '100%', padding: '16px',
                 background: loading
                   ? '#9ca3af'
-                  : 'linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%)',
-                color: '#fff', border: 'none', borderRadius: 14,
+                  : '#1E1E1E',
+                color: '#e8fb1d', border: 'none', borderRadius: 14,
                 fontSize: 14, fontWeight: 800, letterSpacing: '0.08em',
                 textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                boxShadow: loading ? 'none' : '0 8px 24px rgba(15,52,96,0.35)',
+                boxShadow: loading ? 'none' : '0 8px 24px rgba(232,251,29,0.35)',
                 transition: 'all 0.2s',
                 marginTop: 8
               }}
-              onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(15,52,96,0.45)'; } }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(15,52,96,0.35)'; }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(232,251,29,0.45)'; } }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(232,251,29,0.35)'; }}
             >
               {loading ? (
                 <><i className="fas fa-circle-notch fa-spin" /> Saving...</>
