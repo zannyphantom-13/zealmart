@@ -191,19 +191,60 @@ export default function Navbar() {
             {mobileOpen && (
                 <div className="md:hidden bg-white border-b shadow-lg absolute w-full z-50">
                     <div className="p-4 flex flex-col gap-4">
-                        <div className="grid grid-cols-2 gap-3 pb-4 border-b border-gray-100">
+                        {/* User Account Section */}
+                        <div className="pb-4 border-b border-gray-100">
                             {user ? (
-                                <>
-                                    <Link to="/profile" className="text-center border-2 border-zeal-blue text-zeal-blue py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Account</Link>
-                                    <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-center bg-zeal-red text-white py-2.5 rounded font-bold">Logout</button>
-                                </>
-                            ) : (
-                                <>
-                                    <Link to="/login" className="text-center border-2 border-zeal-blue text-zeal-blue py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Login</Link>
-                                    <Link to="/register" className="text-center bg-zeal-red text-white py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Register</Link>
-                                </>
-                            )}
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+                                        <i className="fas fa-user text-lg"></i>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-500 font-bold uppercase">Account</span>
+                                        <span className="text-sm font-bold">Hi, {user.email?.split('@')[0] || 'User'}</span>
+                                    </div>
+                                </div>
+                            ) : null}
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                                {user ? (
+                                    <>
+                                        <Link to="/profile" className="text-center border-2 border-zeal-blue text-zeal-blue py-2.5 rounded font-bold text-sm" onClick={() => setMobileOpen(false)}>Account</Link>
+                                        {isAdmin && (
+                                            <Link to="/admin" className="text-center bg-zeal-blue text-white py-2.5 rounded font-bold text-sm flex items-center justify-center gap-1" onClick={() => setMobileOpen(false)}>
+                                                <i className="fas fa-cog"></i> Admin
+                                            </Link>
+                                        )}
+                                        {!isAdmin && (
+                                            <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-center bg-zeal-red text-white py-2.5 rounded font-bold text-sm">Logout</button>
+                                        )}
+                                        {isAdmin && (
+                                            <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="col-span-2 text-center bg-zeal-red text-white py-2.5 rounded font-bold text-sm">Logout</button>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link to="/login" className="text-center border-2 border-zeal-blue text-zeal-blue py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Login</Link>
+                                        <Link to="/register" className="text-center bg-zeal-red text-white py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Register</Link>
+                                    </>
+                                )}
+                            </div>
                         </div>
+
+                        {/* Cart Section */}
+                        <Link to="/cart" className="flex items-center gap-3 border-b border-gray-100 pb-4" onClick={() => setMobileOpen(false)}>
+                            <div className="relative">
+                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+                                    <i className="fas fa-shopping-cart text-lg"></i>
+                                </div>
+                                <span className="absolute -top-1 -right-1 bg-zeal-red text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white">
+                                    {getTotalItems()}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] text-gray-500 font-bold uppercase">My Cart</span>
+                                <span className="text-sm font-bold">₦0.00</span>
+                            </div>
+                        </Link>
                     </div>
                 </div>
             )}
