@@ -8,9 +8,8 @@ import toast from 'react-hot-toast';
 
 export default function Navbar() {
     const [search, setSearch] = useState('');
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [activeDropdown, setActiveDropdown] = useState(null);
-    const [tickerText, setTickerText] = useState('Powering the Future, Automating Success.');
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [tickerText, setTickerText] = useState('⚡ Best Deals on Electronics & Home Appliances — Limited Offers, Shop Now! 🚚 Enjoy Fast Delivery Across Lagos — Free Shipping on Orders From ₦999,999.99!');
     const { user, isAdmin, logout } = useAuthStore();
     const { getTotalItems } = useCartStore();
     const navigate = useNavigate();
@@ -21,6 +20,7 @@ export default function Navbar() {
                 const docRef = doc(db, 'settings', 'site_settings');
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists() && docSnap.data().tickerMessages) {
+                    // Join multiple messages with spaces
                     setTickerText(docSnap.data().tickerMessages.join('     |     '));
                 }
             } catch (error) {
@@ -41,148 +41,172 @@ export default function Navbar() {
     };
 
     return (
-        <>
-            {/* TOP ANNOUNCEMENT BANNER */}
-            <div className="bg-brandBlack text-white text-center py-2 text-xs font-semibold tracking-widest border-b border-gray-800 uppercase animate-pulse">
-                {tickerText}
+        <header className="bg-white">
+            {/* Animated Ticker Tape */}
+            <div className="bg-zeal-red text-white py-1 overflow-hidden whitespace-nowrap relative flex items-center">
+                <div className="animate-marquee inline-block font-bold text-xs uppercase tracking-widest whitespace-nowrap">
+                    {tickerText} &nbsp;&nbsp;&nbsp;&nbsp; {tickerText}
+                </div>
             </div>
 
-            {/* PRIMARY NAVBAR */}
-            <header className="bg-brandDark text-white sticky top-0 z-50 shadow-xl border-b border-gray-700">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-20 gap-4">
-                        
-                        {/* Brand Logo */}
-                        <Link to="/" className="flex items-center space-x-2 group shrink-0">
-                            <div className="relative bg-brandBlack p-2 rounded-full border border-brandLime/50 group-hover:border-brandLime transition-all duration-300">
-                                <i className="fa-solid fa-solar-panel text-brandLime text-xl"></i>
-                                <i className="fa-solid fa-bolt text-brandYellow text-xs absolute -bottom-1 -right-1 animate-bounce"></i>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xl font-black tracking-tight text-white group-hover:text-brandLime transition-colors duration-300">
-                                    MAYJAY <span className="text-brandLime">CONCEPTS</span>
-                                </span>
-                                <span className="text-[9px] uppercase tracking-widest text-gray-400 -mt-1">Automation & Energy</span>
-                            </div>
-                        </Link>
-
-                        {/* Global Search Bar */}
-                        <div className="hidden md:flex flex-1 max-w-xl relative">
-                            <form onSubmit={handleSearch} className="w-full relative">
-                                <input 
-                                    type="text" 
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    placeholder="Search products, solutions, or systems..."
-                                    className="w-full bg-brandBlack text-white pl-4 pr-12 py-2.5 rounded-lg border border-gray-700 focus:outline-none focus:border-brandLime focus:ring-1 focus:ring-brandLime transition-all duration-300 placeholder-gray-500 text-sm"
-                                />
-                                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-brandLime text-brandBlack font-bold px-3 py-1.5 rounded-md hover:bg-white transition-colors duration-300 text-xs">
-                                    <i className="fa-solid fa-magnifying-glass"></i>
-                                </button>
-                            </form>
-                        </div>
-
-                        {/* Right Utility Icons */}
-                        <div className="flex items-center space-x-4 shrink-0">
-                            <Link to={user ? "/profile" : "/login"} className="text-gray-300 hover:text-brandLime p-2 transition-colors duration-200 relative group hidden sm:inline-block">
-                                <i className="fa-regular fa-user text-lg"></i>
-                            </Link>
-                            {isAdmin && (
-                                <Link to="/admin" className="text-gray-300 hover:text-brandLime p-2 transition-colors duration-200 hidden sm:inline-block" title="Admin Dashboard">
-                                    <i className="fa-solid fa-cog text-lg"></i>
-                                </Link>
-                            )}
-                            {user && (
-                                <button onClick={handleLogout} className="text-gray-300 hover:text-brandLime p-2 transition-colors duration-200 hidden sm:inline-block" title="Logout">
-                                    <i className="fa-solid fa-sign-out-alt text-lg"></i>
-                                </button>
-                            )}
-                            <Link to="/cart" className="text-gray-300 hover:text-brandLime p-2 transition-colors duration-200 relative flex items-center space-x-1 bg-brandBlack/50 px-3 py-1.5 rounded-lg border border-gray-800">
-                                <i className="fa-solid fa-cart-shopping text-brandLime text-sm"></i>
-                                <span className="bg-brandLime text-brandBlack text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                                    {getTotalItems()}
-                                </span>
-                            </Link>
-                            {/* Mobile Menu Button */}
-                            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden text-white hover:text-brandLime focus:outline-none p-2">
-                                <i className={`fa-solid text-xl ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
-                            </button>
-                        </div>
+            {/* Top Info Bar */}
+            <div className="bg-zeal-gray border-b border-gray-200 py-1.5 hidden md:block">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center text-[11px] text-gray-600 font-medium">
+                    <div className="flex space-x-6">
+                        <span><i className="fas fa-phone text-zeal-red mr-1"></i> +234 800 123 4567</span>
+                        <span><i className="fas fa-envelope text-zeal-red mr-1"></i> sales@zealmart.com</span>
+                    </div>
+                    <div className="flex space-x-6">
+                        <span><i className="fas fa-truck text-zeal-red mr-1"></i> Nationwide Delivery</span>
+                        <span><i className="fas fa-shield-alt text-zeal-red mr-1"></i> 100% Authentic Brands</span>
                     </div>
                 </div>
+            </div>
 
-                {/* DESKTOP MEGA-NAVIGATION */}
-                <nav className="hidden md:block bg-brandBlack border-t border-gray-800 text-sm font-medium">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center space-x-1">
-                        <Link to="/" className="px-4 py-3.5 text-brandLime border-b-2 border-brandLime transition-all">HOME</Link>
-                        
-                        <div className="relative" onMouseEnter={() => setActiveDropdown('solar')} onMouseLeave={() => setActiveDropdown(null)}>
-                            <Link to="/products?cat=Solar" className="px-4 py-3.5 text-gray-300 hover:text-white flex items-center space-x-1 transition-all">
-                                <span>SOLAR & POWER SOLUTIONS</span>
-                                <i className={`fa-solid fa-chevron-down text-[10px] transition-transform duration-200 ${activeDropdown === 'solar' ? 'rotate-180' : ''}`}></i>
-                            </Link>
-                            {activeDropdown === 'solar' && (
-                                <div className="absolute left-0 w-56 bg-white text-gray-800 shadow-2xl rounded-b-lg border border-gray-100 py-2 z-50">
-                                    <Link to="/products?cat=Solar%20Panels" className="block px-4 py-2.5 hover:bg-brandLime/10 hover:text-brandDark transition-colors">Solar Panels</Link>
-                                    <Link to="/products?cat=Inverters" className="block px-4 py-2.5 hover:bg-brandLime/10 hover:text-brandDark transition-colors">Inverters & Converters</Link>
-                                </div>
-                            )}
+            {/* Main Header */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                <div className="flex items-center justify-between gap-6">
+                    {/* Logo */}
+                    <Link to="/" className="flex-shrink-0">
+                        <div className="font-display text-3xl font-black tracking-tighter hover:scale-105 transition-transform duration-300">
+                            <span className="text-zeal-blue">ZEAL</span><span className="text-zeal-red">MART</span>
                         </div>
+                    </Link>
 
-                        <div className="relative" onMouseEnter={() => setActiveDropdown('electronics')} onMouseLeave={() => setActiveDropdown(null)}>
-                            <Link to="/products?cat=Electronics" className="px-4 py-3.5 text-gray-300 hover:text-white flex items-center space-x-1 transition-all">
-                                <span>GENERAL ELECTRONICS</span>
-                                <i className={`fa-solid fa-chevron-down text-[10px] transition-transform duration-200 ${activeDropdown === 'electronics' ? 'rotate-180' : ''}`}></i>
-                            </Link>
-                            {activeDropdown === 'electronics' && (
-                                <div className="absolute left-0 w-56 bg-white text-gray-800 shadow-2xl rounded-b-lg border border-gray-100 py-2 z-50">
-                                    <Link to="/products?cat=Appliances" className="block px-4 py-2.5 hover:bg-brandLime/10 hover:text-brandDark transition-colors">Smart Home Appliances</Link>
-                                    <Link to="/products?cat=Gadgets" className="block px-4 py-2.5 hover:bg-brandLime/10 hover:text-brandDark transition-colors">Gadgets & Accessories</Link>
-                                </div>
-                            )}
-                        </div>
-
-                        <Link to="/products" className="px-4 py-3.5 text-gray-300 hover:text-white transition-all">ALL PRODUCTS</Link>
-                    </div>
-                </nav>
-
-                {/* MOBILE NAVIGATION */}
-                {mobileMenuOpen && (
-                    <div className="md:hidden bg-brandDark border-t border-gray-700 px-4 pt-2 pb-6 space-y-2 transition-all">
-                        <form onSubmit={handleSearch} className="relative my-3">
+                    {/* Search Bar - Desktop */}
+                    <div className="hidden md:block flex-1 max-w-2xl">
+                        <form onSubmit={handleSearch} className="flex w-full border-2 border-zeal-blue rounded overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
                             <input 
                                 type="text" 
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search..." 
-                                className="w-full bg-brandBlack text-white pl-4 pr-10 py-2 rounded-lg text-sm border border-gray-700" 
+                                className="w-full py-2.5 px-4 outline-none text-sm text-gray-800 placeholder-gray-400" 
+                                placeholder="Search for TVs, Air Conditioners, Laptops, Generators..." 
                             />
-                            <button type="submit" className="absolute right-3 top-2 text-gray-400">
-                                <i className="fa-solid fa-magnifying-glass text-xs"></i>
+                            <button type="submit" className="bg-zeal-blue text-white px-8 font-bold hover:bg-blue-900 transition flex items-center justify-center">
+                                SEARCH
                             </button>
                         </form>
-                        <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-md bg-brandBlack text-brandLime font-semibold">HOME</Link>
-                        <div className="border-t border-gray-800 my-1"></div>
-                        <span className="block px-3 py-1 text-xs text-gray-400 font-bold tracking-wider uppercase">Categories</span>
-                        <Link to="/products?cat=Solar" onClick={() => setMobileMenuOpen(false)} className="block px-5 py-2 text-gray-300 text-sm hover:text-white">Solar & Power</Link>
-                        <Link to="/products?cat=Electronics" onClick={() => setMobileMenuOpen(false)} className="block px-5 py-2 text-gray-300 text-sm hover:text-white">General Electronics</Link>
-                        <div className="border-t border-gray-800 my-1"></div>
-                        
-                        {user ? (
-                            <>
-                                <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-gray-300 hover:text-white">My Account</Link>
-                                {isAdmin && <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-brandLime hover:text-white">Admin</Link>}
-                                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 text-red-400 hover:text-red-300">Logout</button>
-                            </>
-                        ) : (
-                            <>
-                                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-brandLime hover:text-white">Login</Link>
-                                <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 text-gray-300 hover:text-white">Register</Link>
-                            </>
-                        )}
                     </div>
-                )}
-            </header>
-        </>
+
+                    {/* Actions - Desktop */}
+                    <div className="hidden md:flex items-center gap-6">
+                        {user ? (
+                            <div className="flex items-center gap-4">
+                                <Link to="/profile" className="flex items-center gap-2 text-gray-700 hover:text-zeal-red transition group">
+                                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 group-hover:border-zeal-red transition-all duration-300 group-hover:-translate-y-1">
+                                        <i className="fas fa-user text-lg"></i>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] text-gray-500 font-bold uppercase">Account</span>
+                                        <span className="text-sm font-bold">Hi, {user.email?.split('@')[0] || 'User'}</span>
+                                    </div>
+                                </Link>
+                                {isAdmin && (
+                                    <Link to="/admin" className="text-sm font-bold text-zeal-blue hover:text-zeal-red transition-colors"><i className="fas fa-cog"></i> Admin</Link>
+                                )}
+                                <button onClick={handleLogout} className="text-sm font-bold text-gray-500 hover:text-zeal-red transition-colors">Logout</button>
+                            </div>
+                        ) : (
+                            <Link to="/login" className="flex items-center gap-2 text-gray-700 hover:text-zeal-red transition group">
+                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 group-hover:border-zeal-red transition-all duration-300 group-hover:-translate-y-1">
+                                    <i className="fas fa-user text-lg"></i>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[11px] text-gray-500 font-bold uppercase">Sign In</span>
+                                    <span className="text-sm font-bold">Account</span>
+                                </div>
+                            </Link>
+                        )}
+
+                        <Link to="/cart" className="flex items-center gap-2 text-gray-700 hover:text-zeal-red transition group">
+                            <div className="relative">
+                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 group-hover:border-zeal-red transition-all duration-300 group-hover:-translate-y-1">
+                                    <i className="fas fa-shopping-cart text-lg"></i>
+                                </div>
+                                <span className="absolute -top-1 -right-1 bg-zeal-red text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                                    {getTotalItems()}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] text-gray-500 font-bold uppercase">My Cart</span>
+                                <span className="text-sm font-bold">₦0.00</span>
+                            </div>
+                        </Link>
+                    </div>
+
+                    {/* Mobile Toggles */}
+                    <div className="flex md:hidden items-center gap-4">
+                        <Link to="/cart" className="relative text-gray-800">
+                            <i className="fas fa-shopping-cart text-2xl"></i>
+                            <span className="absolute -top-2 -right-2 bg-zeal-red text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                                {getTotalItems()}
+                            </span>
+                        </Link>
+                        <button onClick={() => setMobileOpen(!mobileOpen)} className="text-gray-800 text-2xl">
+                            <i className={`fas ${mobileOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Mobile Search */}
+                <div className="mt-4 md:hidden">
+                    <form onSubmit={handleSearch} className="flex w-full border-2 border-zeal-blue rounded overflow-hidden">
+                        <input 
+                            type="text" 
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full py-2.5 px-3 outline-none text-sm" 
+                            placeholder="Search products..." 
+                        />
+                        <button type="submit" className="bg-zeal-blue text-white px-5 font-bold">
+                            <i className="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {/* Navigation Categories */}
+            <div className="bg-zeal-blue text-white shadow-md relative z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex md:space-x-8 overflow-x-auto whitespace-nowrap hide-scrollbar">
+                        <Link to="/products" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide flex items-center uppercase transition-all">
+                            <i className="fas fa-list mr-2"></i> All Categories
+                        </Link>
+                        <Link to="/products?cat=Air%20Conditioners" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Air Conditioners</Link>
+                        <Link to="/products?cat=Televisions" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Televisions</Link>
+                        <Link to="/products?cat=Refrigerators" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Refrigerators</Link>
+                        <Link to="/products?cat=Generators" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Generators</Link>
+                        <Link to="/products?cat=Washing%20Machines" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Washing Machines</Link>
+                        <Link to="/products?cat=Phones" className="py-3 px-2 border-b-2 border-transparent hover:border-zeal-red font-bold text-sm tracking-wide uppercase transition-all">Phones & Tablets</Link>
+                        
+                        <Link to="/products" className="py-3 px-2 ml-auto text-yellow-400 hover:text-white font-black text-sm tracking-wide flex items-center uppercase transition-all group">
+                            <i className="fas fa-fire mr-1 group-hover:animate-bounce"></i> Hot Deals
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Menu Dropdown */}
+            {mobileOpen && (
+                <div className="md:hidden bg-white border-b shadow-lg absolute w-full z-50">
+                    <div className="p-4 flex flex-col gap-4">
+                        <div className="grid grid-cols-2 gap-3 pb-4 border-b border-gray-100">
+                            {user ? (
+                                <>
+                                    <Link to="/profile" className="text-center border-2 border-zeal-blue text-zeal-blue py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Account</Link>
+                                    <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="text-center bg-zeal-red text-white py-2.5 rounded font-bold">Logout</button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="text-center border-2 border-zeal-blue text-zeal-blue py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Login</Link>
+                                    <Link to="/register" className="text-center bg-zeal-red text-white py-2.5 rounded font-bold" onClick={() => setMobileOpen(false)}>Register</Link>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </header>
     );
 }

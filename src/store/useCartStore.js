@@ -114,7 +114,7 @@ const useCartStore = create(
       }
     }),
     {
-      name: 'mayjay-cart',
+      name: 'jd-good-hair-cart',
       onRehydrateStorage: () => (state) => {
         if (state) state.setHydrated();
       },

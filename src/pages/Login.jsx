@@ -22,7 +22,7 @@ export default function Login() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      if (email === 'mayjay@gmail.com' || email === 'zealmart.ng@gmail.com') { // keep zealmart email for backward compatibility with existing tests
+      if (email === 'zealmart.ng@gmail.com') {
         toast.success('Welcome back, Admin!');
         navigate('/admin');
         return;
@@ -69,31 +69,26 @@ export default function Login() {
 
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link to="/" className="inline-block group">
-              <div className="flex flex-col items-center">
-                  <div className="relative bg-brandBlack p-3 rounded-full border border-brandLime/50 mb-3 group-hover:border-brandLime transition-all duration-300">
-                      <i className="fa-solid fa-solar-panel text-brandLime text-2xl"></i>
-                  </div>
-                  <span className="text-3xl font-black tracking-tight text-brandDark">
-                      MAYJAY <span className="text-brandLime">CONCEPTS</span>
-                  </span>
-                  <span className="text-[10px] uppercase tracking-widest text-gray-500 mt-1">Automation & Energy</span>
+            <Link to="/" className="inline-block">
+              <div className="font-display text-4xl font-black tracking-tighter">
+                <span className="text-zeal-blue">ZEAL</span><span className="text-zeal-red">MART</span>
               </div>
             </Link>
+            <p className="text-gray-500 text-sm mt-2 font-medium">Marketplace of the Nation</p>
           </div>
 
           {/* Card */}
-          <div className="bg-white border border-gray-200 shadow-xl rounded-xl overflow-hidden">
+          <div className="bg-white border border-gray-200 shadow-lg rounded-sm overflow-hidden">
             {/* Card Header */}
-            <div className="bg-brandDark px-8 py-6 text-white text-center">
-              <h1 className="text-2xl font-black uppercase tracking-wide">Welcome Back</h1>
-              <p className="text-gray-400 text-sm font-medium mt-1">Sign in to your MAYJAY account</p>
+            <div className="bg-zeal-dark px-8 py-6 text-white">
+              <h1 className="text-2xl font-black uppercase tracking-wide font-display">Welcome Back</h1>
+              <p className="text-gray-400 text-sm font-medium mt-1">Sign in to your Zealmart account</p>
             </div>
 
             {/* Card Body */}
             <div className="px-8 py-8">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-md mb-6 flex items-center gap-2">
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-sm mb-6 flex items-center gap-2">
                   <i className="fas fa-exclamation-circle text-red-500"></i>
                   {error}
                 </div>
@@ -113,7 +108,7 @@ export default function Login() {
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 focus:border-brandLime outline-none text-sm font-medium transition-colors rounded-lg bg-gray-50 focus:bg-white focus:ring-1 focus:ring-brandLime"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 focus:border-zeal-blue outline-none text-sm font-medium transition-colors rounded-sm bg-gray-50 focus:bg-white"
                     />
                   </div>
                 </div>
@@ -124,7 +119,7 @@ export default function Login() {
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                       Password
                     </label>
-                    <a href="#" className="text-xs text-brandGreen font-bold hover:text-brandLime transition-colors">Forgot Password?</a>
+                    <a href="#" className="text-xs text-zeal-blue font-bold hover:text-zeal-red transition-colors">Forgot Password?</a>
                   </div>
                   <div className="relative">
                     <i className="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -134,12 +129,12 @@ export default function Login() {
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       required
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 focus:border-brandLime outline-none text-sm font-medium transition-colors rounded-lg bg-gray-50 focus:bg-white focus:ring-1 focus:ring-brandLime"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 focus:border-zeal-blue outline-none text-sm font-medium transition-colors rounded-sm bg-gray-50 focus:bg-white"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(v => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brandDark transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
@@ -150,7 +145,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-brandLime hover:bg-white border-2 border-transparent hover:border-brandLime text-brandBlack font-black py-4 rounded-lg uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  className="w-full bg-zeal-red hover:bg-red-800 disabled:opacity-60 text-white font-black py-4 rounded-sm uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   {loading ? (
                     <>
@@ -167,7 +162,7 @@ export default function Login() {
               <div className="mt-8 pt-6 border-t border-gray-100 text-center">
                 <p className="text-sm text-gray-600 font-medium">
                   Don't have an account?{' '}
-                  <Link to="/register" className="text-brandGreen font-black hover:text-brandLime transition-colors">
+                  <Link to="/register" className="text-zeal-blue font-black hover:text-zeal-red transition-colors">
                     Create Account
                   </Link>
                 </p>
@@ -177,8 +172,8 @@ export default function Login() {
 
           {/* Trust Badges */}
           <div className="mt-6 flex justify-center gap-8 text-xs text-gray-400 font-medium">
-            <span><i className="fas fa-lock mr-1 text-brandGreen"></i> Secure Login</span>
-            <span><i className="fas fa-shield-alt mr-1 text-brandLime"></i> 100% Safe</span>
+            <span><i className="fas fa-lock mr-1 text-green-500"></i> Secure Login</span>
+            <span><i className="fas fa-shield-alt mr-1 text-blue-500"></i> 100% Safe</span>
           </div>
         </div>
       </div>

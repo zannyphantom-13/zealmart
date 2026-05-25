@@ -123,8 +123,8 @@ export default function AdminOrders() {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-      <Clock size={40} className="mb-4 animate-pulse text-brandLime" />
-      <h2 className="text-xl font-bold uppercase tracking-widest text-gray-500">Loading Orders...</h2>
+      <Clock size={40} className="mb-4 animate-pulse text-zeal-blue" />
+      <h2 className="text-xl font-bold font-display uppercase tracking-widest text-gray-500">Loading Orders...</h2>
     </div>
   );
 
@@ -139,19 +139,19 @@ export default function AdminOrders() {
       <h1 className="text-2xl font-black font-display uppercase tracking-wider text-gray-900 mb-6">Customer Orders</h1>
 
       {/* Summary Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
-          { label: 'Total Orders', value: totalOrders, icon: <Package size={24} />, color: 'text-white', bg: 'bg-brandDark', border: 'border-gray-800' },
-          { label: 'Pending Payment', value: pendingOrders, icon: <AlertCircle size={24} />, color: 'text-brandDark', bg: 'bg-amber-400', border: 'border-amber-500' },
-          { label: 'Completed', value: completedOrders, icon: <CheckCircle size={24} />, color: 'text-brandBlack', bg: 'bg-brandLime', border: 'border-brandLime/50' },
+          { label: 'Total Orders', value: totalOrders, icon: <Package size={20} />, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
+          { label: 'Pending Payment', value: pendingOrders, icon: <AlertCircle size={20} />, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
+          { label: 'Completed', value: completedOrders, icon: <CheckCircle size={20} />, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100' },
         ].map(stat => (
-          <div key={stat.label} className={`bg-white rounded-2xl border ${stat.border} p-6 flex items-center gap-5 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1`}>
-            <div className={`${stat.bg} ${stat.color} p-4 rounded-xl shadow-inner flex-shrink-0`}>
+          <div key={stat.label} className={`bg-white rounded-sm border ${stat.border} p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow`}>
+            <div className={`${stat.bg} ${stat.color} p-3 rounded-full flex-shrink-0`}>
               {stat.icon}
             </div>
             <div>
-              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">{stat.label}</div>
-              <div className="font-black text-2xl text-brandDark tracking-tighter">{stat.value}</div>
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{stat.label}</div>
+              <div className="font-black text-2xl text-gray-900 font-display">{stat.value}</div>
             </div>
           </div>
         ))}
@@ -166,32 +166,32 @@ export default function AdminOrders() {
       )}
 
       {orders.length > 0 && (
-        <div className="bg-white border border-gray-100 p-5 rounded-2xl mb-8 flex flex-col md:flex-row gap-4 items-center shadow-md">
+        <div className="bg-white border border-gray-200 p-4 rounded-sm mb-6 flex flex-col md:flex-row gap-4 items-center shadow-sm">
           <div className="relative flex-grow w-full md:w-auto">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search by Order ID, Name, Email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold focus:border-brandLime focus:ring-1 focus:ring-brandLime outline-none transition-colors shadow-inner"
+              className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-sm text-sm font-medium focus:border-zeal-blue outline-none transition-colors"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-auto bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-brandLime focus:ring-1 focus:ring-brandLime transition-colors shadow-inner"
+            className="w-full md:w-auto bg-gray-50 border border-gray-200 rounded-sm px-3 py-2 text-sm font-medium text-gray-700 outline-none focus:border-zeal-blue transition-colors"
           >
             <option>All Orders</option>
             <option>Completed</option>
             <option>Processing (Installments)</option>
           </select>
-          <div className="flex items-center gap-2 w-full md:w-auto bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus-within:border-brandLime focus-within:ring-1 focus-within:ring-brandLime transition-colors shadow-inner">
-            <SlidersHorizontal size={16} className="text-gray-400" />
+          <div className="flex items-center gap-2 w-full md:w-auto bg-gray-50 border border-gray-200 rounded-sm px-3 py-2 focus-within:border-zeal-blue transition-colors">
+            <SlidersHorizontal size={14} className="text-gray-400" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent text-sm font-bold text-gray-700 outline-none w-full"
+              className="bg-transparent text-sm font-medium text-gray-700 outline-none w-full"
             >
               <option>Date (Newest First)</option>
               <option>Date (Oldest First)</option>
@@ -274,7 +274,7 @@ export default function AdminOrders() {
                   </div>
                   
                   <div className="flex items-center gap-3 min-w-[200px] flex-grow">
-                    <div className="w-10 h-10 rounded-full bg-brandDark text-brandLime flex items-center justify-center font-black text-sm flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-zeal-dark text-white flex items-center justify-center font-black text-sm flex-shrink-0">
                       {customer ? customer.firstName?.[0]?.toUpperCase() : <Users size={16} />}
                     </div>
                     <div className="min-w-0">
@@ -370,7 +370,7 @@ export default function AdminOrders() {
                               }
                             }}
                             disabled={updating}
-                            className="w-36 pl-8 pr-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-sm font-black text-brandDark focus:border-brandLime outline-none transition-colors text-right disabled:opacity-50"
+                            className="w-36 pl-8 pr-3 py-2 bg-white border-2 border-gray-200 rounded-sm text-sm font-black text-zeal-blue focus:border-zeal-blue outline-none transition-colors text-right disabled:opacity-50"
                           />
                         </div>
                       </div>
@@ -378,7 +378,7 @@ export default function AdminOrders() {
                       {!isComplete && nextPaymentDate && (
                         <div className="bg-blue-50 border border-blue-100 p-4 rounded-sm text-center mb-5">
                           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Next Payment Due</div>
-                          <div className="font-black text-brandDark mb-2">{nextPaymentDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                          <div className="font-black text-zeal-blue mb-2">{nextPaymentDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                           <span className={`inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider mb-3 ${isOverdue ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                             {timerText}
                           </span>
@@ -391,14 +391,14 @@ export default function AdminOrders() {
 
                       <div className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden mb-2">
                         <div 
-                          className={`h-full transition-all duration-1000 ${order.amountPaid >= order.totalAmount ? 'bg-brandGreen' : 'bg-brandLime'}`}
+                          className={`h-full transition-all duration-1000 ${order.amountPaid >= order.totalAmount ? 'bg-green-500' : 'bg-zeal-blue'}`}
                           style={{ width: `${Math.min(100, (order.amountPaid / order.totalAmount) * 100)}%` }} 
                         />
                       </div>
                       <div className="text-xs font-bold text-center text-gray-500 uppercase tracking-wider mb-4">
                         {Math.round((order.amountPaid / order.totalAmount) * 100)}% Paid
                         {order.amountPaid < order.totalAmount && (
-                          <span className="mx-1">• Balance: <span className="text-brandDark font-bold">{fmt(order.totalAmount - order.amountPaid)}</span></span>
+                          <span className="mx-1">• Balance: <span className="text-zeal-red">{fmt(order.totalAmount - order.amountPaid)}</span></span>
                         )}
                       </div>
 

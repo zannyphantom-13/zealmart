@@ -7,6 +7,7 @@ import useCartStore from '../store/useCartStore';
 import useAuthStore from '../store/useAuthStore';
 import Footer from '../components/Footer';
 import toast from 'react-hot-toast';
+import { checkCartAccess } from '../utils/rbac';
 
 function fmt(n) {
   return '₦' + Math.ceil(n).toLocaleString('en-NG');
@@ -16,6 +17,16 @@ export default function Cart() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { items, _hydrated, removeFromCart, updateQuantity, getInitialPaymentTotal, clearCart } = useCartStore();
+
+  // RBAC: Check if user is admin - admins cannot access cart
+  useEffect(() => {
+    if (user && user.email === 'zealmart.ng@gmail.com') {
+      toast.error('Admin accounts cannot access the shopping cart');
+      navigate('/admin');
+      return;
+    }
+  }, [user, navigate]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deliveryInfo, setDeliveryInfo] = useState({
@@ -101,7 +112,7 @@ export default function Cart() {
     return (
       <main className="min-h-screen flex flex-col bg-gray-50">
         <div className="flex-grow flex flex-col items-center justify-center text-gray-400">
-          <i className="fas fa-circle-notch fa-spin text-4xl mb-4 text-brandLime"></i>
+          <i className="fas fa-circle-notch fa-spin text-4xl mb-4 text-zeal-blue"></i>
           <h2 className="text-xl font-bold font-display uppercase tracking-widest text-gray-500">Loading Cart...</h2>
         </div>
       </main>
@@ -177,7 +188,7 @@ export default function Cart() {
           <ShoppingBag size={64} className="text-gray-300 mb-6 mx-auto" />
           <h1 className="text-3xl font-display font-black uppercase tracking-wider text-gray-900 mb-4">Your Bag is Empty</h1>
           <p className="text-gray-500 font-medium mb-8">Looks like you haven't added anything yet.</p>
-          <Link to="/products" className="inline-block bg-brandLime hover:bg-white border-2 border-transparent hover:border-brandLime text-brandBlack font-bold py-3 px-8 rounded-xl uppercase tracking-wider text-sm transition-colors shadow-md">
+          <Link to="/products" className="inline-block bg-zeal-red hover:bg-red-800 text-white font-bold py-3 px-8 rounded-sm uppercase tracking-wider text-sm transition-colors shadow-md">
             Start Shopping
           </Link>
         </div>
@@ -189,14 +200,14 @@ export default function Cart() {
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">
       <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <Link to="/products" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-brandDark uppercase tracking-wider transition-colors mb-8">
+        <Link to="/products" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-zeal-red uppercase tracking-wider transition-colors mb-8">
           <ArrowLeft size={16} /> Continue Shopping
         </Link>
 
-        <h1 className="text-4xl font-black text-brandDark uppercase tracking-tight mb-8">Shopping Bag</h1>
+        <h1 className="text-3xl font-display font-black text-gray-900 uppercase tracking-tight mb-8">Shopping Bag</h1>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-8 text-sm font-bold flex items-center gap-2">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-sm mb-8 text-sm font-medium flex items-center gap-2">
             <i className="fas fa-exclamation-circle text-red-500"></i> {error}
           </div>
         )}
@@ -206,18 +217,18 @@ export default function Cart() {
           {/* Items List */}
           <div className="w-full lg:flex-grow flex flex-col gap-4">
             {items.map((item) => (
-              <div key={item.cartItemId} className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-5 hover:shadow-xl transition-all shadow-md group">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 p-2 relative overflow-hidden">
-                  <img src={item.img} alt={item.name} loading="lazy" decoding="async" className="max-w-full max-h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500" />
+              <div key={item.cartItemId} className="bg-white border border-gray-200 rounded-sm p-4 sm:p-5 flex flex-col sm:flex-row gap-5 hover:border-gray-300 transition-colors shadow-sm">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 border border-gray-100 rounded flex items-center justify-center flex-shrink-0 p-2 relative">
+                  <img src={item.img} alt={item.name} loading="lazy" decoding="async" className="max-w-full max-h-full object-contain mix-blend-multiply" />
                 </div>
 
                 <div className="flex flex-col flex-grow">
                   <div className="flex justify-between items-start mb-2">
                     <div className="pr-4">
-                      <h3 className="font-black text-brandDark text-sm sm:text-base leading-tight mb-1 uppercase tracking-tight">{item.name}</h3>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Length: {item.length}</p>
+                      <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-tight mb-1">{item.name}</h3>
+                      <p className="text-xs font-medium text-gray-500">Length: {item.length}</p>
                     </div>
-                    <button onClick={() => removeFromCart(item.cartItemId)} className="text-gray-300 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50" aria-label="Remove item">
+                    <button onClick={() => removeFromCart(item.cartItemId)} className="text-gray-400 hover:text-red-500 transition-colors p-1" aria-label="Remove item">
                       <Trash2 size={18} />
                     </button>
                   </div>
@@ -226,36 +237,36 @@ export default function Cart() {
                     <div className="flex flex-col gap-3 w-full sm:w-auto">
                       {item.paymentChoice === 'installment' ? (
                         items.filter(i => i.paymentChoice === 'installment').length > 1 ? (
-                          <div className="bg-brandDark text-brandLime border border-gray-800 text-[10px] font-medium p-2 rounded-lg max-w-xs leading-relaxed shadow-inner">
-                            <strong className="block mb-0.5 text-white"><i className="fas fa-info-circle mr-1"></i> Multiple Installment Items</strong>
+                          <div className="bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-medium p-2 rounded max-w-xs leading-relaxed">
+                            <strong className="block mb-0.5"><i className="fas fa-info-circle mr-1"></i> Multiple Installment Items Detected</strong>
                             Payments will be combined into a single schedule during order review.
                           </div>
                         ) : (
-                          <span className="inline-block bg-brandLime/20 text-brandDark border border-brandLime/40 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest w-max">
+                          <span className="inline-block bg-blue-50 text-blue-700 border border-blue-100 text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-wider w-max">
                             {item.paymentFrequency === 'weekly' ? item.installments * 4 + ' Weekly Payments' : item.installments + ' Monthly Payments'}
                           </span>
                         )
                       ) : (
-                        <span className="inline-block bg-brandDark text-brandLime border border-brandBlack text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest w-max">
+                        <span className="inline-block bg-green-50 text-green-700 border border-green-100 text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-wider w-max">
                           Full Payment
                         </span>
                       )}
                       
-                      <div className="flex items-center border border-gray-200 rounded-lg w-max bg-gray-50 overflow-hidden shadow-sm">
-                        <button onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} className="px-4 py-1.5 hover:bg-brandLime hover:text-brandBlack text-gray-500 font-black transition-colors">-</button>
-                        <span className="px-4 py-1.5 font-black text-sm bg-white border-x border-gray-200 min-w-[48px] text-center text-brandDark">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} className="px-4 py-1.5 hover:bg-brandLime hover:text-brandBlack text-gray-500 font-black transition-colors">+</button>
+                      <div className="flex items-center border border-gray-200 rounded-sm w-max bg-gray-50">
+                        <button onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} className="px-3 py-1 hover:bg-gray-200 text-gray-600 font-bold transition-colors">-</button>
+                        <span className="px-3 py-1 font-bold text-sm bg-white border-x border-gray-200 min-w-[40px] text-center">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} className="px-3 py-1 hover:bg-gray-200 text-gray-600 font-bold transition-colors">+</button>
                       </div>
                     </div>
 
                     <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-0 border-gray-100 pt-3 sm:pt-0">
                       {item.paymentChoice === 'installment' ? (
                         <div>
-                          <div className="font-black text-2xl text-brandDark tracking-tighter">{fmt((item.periodPayment || item.monthlyPayment || 0) * item.quantity)}</div>
-                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">/ {item.paymentFrequency === 'weekly' ? 'Week' : 'Month'}</div>
+                          <div className="font-display font-black text-lg text-gray-900">{fmt((item.periodPayment || item.monthlyPayment || 0) * item.quantity)}</div>
+                          <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">/ {item.paymentFrequency === 'weekly' ? 'Week' : 'Month'}</div>
                         </div>
                       ) : (
-                        <div className="font-black text-2xl text-brandDark tracking-tighter">{fmt(item.price * item.quantity)}</div>
+                        <div className="font-display font-black text-lg text-gray-900">{fmt(item.price * item.quantity)}</div>
                       )}
                     </div>
                   </div>
@@ -265,39 +276,39 @@ export default function Cart() {
           </div>
 
           {/* Checkout Summary Sidebar */}
-          <div className="w-full lg:w-[420px] flex-shrink-0">
-            <div className="bg-gradient-to-br from-brandDark to-brandBlack border border-gray-800 rounded-2xl p-6 lg:p-8 shadow-2xl text-white sticky top-8">
+          <div className="w-full lg:w-[400px] flex-shrink-0">
+            <div className="bg-white border border-gray-200 rounded-sm p-6 lg:p-8 shadow-sm sticky top-8">
               
-              <h2 className="text-[11px] font-black text-brandLime uppercase tracking-widest mb-4 border-b border-gray-800 pb-3">Delivery Information</h2>
-              <div className="flex flex-col gap-4 mb-8">
-                <input type="text" placeholder="Full Address" value={deliveryInfo.address} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })} className="w-full bg-brandBlack border border-gray-800 text-sm font-bold rounded-lg px-4 py-3 text-white outline-none focus:border-brandLime focus:ring-1 focus:ring-brandLime transition-all shadow-inner placeholder-gray-600" />
-                <div className="flex gap-4">
-                  <input type="text" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} className="w-full bg-brandBlack border border-gray-800 text-sm font-bold rounded-lg px-4 py-3 text-white outline-none focus:border-brandLime focus:ring-1 focus:ring-brandLime transition-all shadow-inner placeholder-gray-600" />
-                  <input type="text" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} className="w-full bg-brandBlack border border-gray-800 text-sm font-bold rounded-lg px-4 py-3 text-white outline-none focus:border-brandLime focus:ring-1 focus:ring-brandLime transition-all shadow-inner placeholder-gray-600" />
+              <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3">Delivery Information</h2>
+              <div className="flex flex-col gap-3 mb-8">
+                <input type="text" placeholder="Full Address" value={deliveryInfo.address} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                <div className="flex gap-3">
+                  <input type="text" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                  <input type="text" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
                 </div>
-                <input type="tel" placeholder="Phone Number" value={deliveryInfo.phone} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })} className="w-full bg-brandBlack border border-gray-800 text-sm font-bold rounded-lg px-4 py-3 text-white outline-none focus:border-brandLime focus:ring-1 focus:ring-brandLime transition-all shadow-inner placeholder-gray-600" />
-                <textarea placeholder="Additional Instructions (Optional)" value={deliveryInfo.instructions} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, instructions: e.target.value })} className="w-full bg-brandBlack border border-gray-800 text-sm font-bold rounded-lg px-4 py-3 text-white outline-none focus:border-brandLime focus:ring-1 focus:ring-brandLime transition-all shadow-inner resize-y min-h-[80px] placeholder-gray-600"></textarea>
+                <input type="tel" placeholder="Phone Number" value={deliveryInfo.phone} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                <textarea placeholder="Additional Instructions (Optional)" value={deliveryInfo.instructions} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, instructions: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors resize-y min-h-[80px]"></textarea>
               </div>
 
-              <h2 className="text-[11px] font-black text-brandLime uppercase tracking-widest mb-4 border-b border-gray-800 pb-3">Order Summary</h2>
+              <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3">Order Summary</h2>
               
-              <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">
+              <div className="flex justify-between items-center text-sm font-medium text-gray-500 mb-3">
                 <span>Subtotal ({items.reduce((a, b) => a + b.quantity, 0)} items)</span>
-                <span className="text-white font-black">{fmt(totalToPayNow)}</span>
+                <span className="text-gray-900 font-bold">{fmt(totalToPayNow)}</span>
               </div>
-              <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-gray-400 mb-6">
+              <div className="flex justify-between items-center text-sm font-medium text-gray-500 mb-6">
                 <span>Shipping</span>
                 <span>Calculated at checkout</span>
               </div>
 
-              <div className="flex justify-between items-end border-t border-gray-800 pt-5 mb-8 bg-brandBlack/50 p-4 rounded-xl shadow-inner border border-gray-800/50 mt-4">
-                <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">Total Due Today</span>
-                <span className="text-3xl font-black text-brandLime tracking-tighter">{fmt(totalToPayNow)}</span>
+              <div className="flex justify-between items-end border-t border-gray-200 pt-4 mb-6">
+                <span className="text-sm font-bold text-gray-800 uppercase tracking-widest">Total Due Today</span>
+                <span className="text-2xl font-display font-black text-zeal-red">{fmt(totalToPayNow)}</span>
               </div>
 
               {!user && (
-                <div className="bg-amber-500/10 border border-amber-500/30 text-amber-500 px-4 py-3 rounded-lg mb-6 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
-                  <i className="fas fa-exclamation-triangle"></i> Login Required
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-sm mb-6 text-sm font-bold flex items-center gap-2">
+                  <i className="fas fa-exclamation-triangle"></i> You must be logged in to checkout.
                 </div>
               )}
 
@@ -317,12 +328,12 @@ export default function Cart() {
                   setShowPreview(true);
                 }}
                 disabled={loading}
-                className="w-full bg-brandLime text-brandBlack hover:bg-white border border-transparent hover:border-brandLime font-black py-4 rounded-xl text-sm uppercase tracking-widest transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-3 transform hover:-translate-y-1"
+                className="w-full bg-zeal-dark hover:bg-black text-white font-black py-4 rounded-sm text-sm uppercase tracking-widest transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
               >
                 Review & Confirm Order
               </button>
 
-              <div className="mt-6 flex items-center justify-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                 <i className="fas fa-lock"></i> Secure Checkout (Test Mode)
               </div>
             </div>
@@ -335,11 +346,11 @@ export default function Cart() {
       {/* Confirm Order Preview Modal */}
       {showPreview && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-sm w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             
-            <div className="bg-brandDark text-white px-6 py-4 flex justify-between items-center flex-shrink-0">
+            <div className="bg-zeal-dark text-white px-6 py-4 flex justify-between items-center flex-shrink-0">
               <h2 className="text-lg font-display font-black uppercase tracking-wider m-0">Confirm Your Order</h2>
-              <button onClick={() => setShowPreview(false)} className="text-gray-400 hover:text-brandLime transition-colors">
+              <button onClick={() => setShowPreview(false)} className="text-gray-400 hover:text-white transition-colors">
                 <i className="fas fa-times text-lg"></i>
               </button>
             </div>
@@ -510,22 +521,22 @@ export default function Cart() {
                       ))}
                     </div>
 
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+                    <div className="bg-gray-50 border border-gray-200 rounded-sm p-5 mb-6">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-black text-gray-500 uppercase tracking-wider">Total Due Today</span>
-                        <span className="text-xl font-display font-black text-brandGreen">{fmt(totalToPayNow)}</span>
+                        <span className="text-xl font-display font-black text-zeal-red">{fmt(totalToPayNow)}</span>
                       </div>
                       {items.some(i => i.paymentChoice === 'installment') && (
                         <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Combined Installment</span>
-                          <span className="text-sm font-bold text-brandGreen">{fmt(items.reduce((acc, i) => acc + (i.paymentChoice === 'installment' ? (i.periodPayment || i.monthlyPayment) * i.quantity : 0), 0))} <span className="text-[10px] text-gray-400">/ {items.some(i => i.paymentFrequency === 'weekly') ? 'wk' : 'mo'}</span></span>
+                          <span className="text-sm font-bold text-zeal-blue">{fmt(items.reduce((acc, i) => acc + (i.paymentChoice === 'installment' ? (i.periodPayment || i.monthlyPayment) * i.quantity : 0), 0))} <span className="text-[10px] text-gray-400">/ {items.some(i => i.paymentFrequency === 'weekly') ? 'wk' : 'mo'}</span></span>
                         </div>
                       )}
                     </div>
 
                     <div className="flex gap-4 mt-8">
                       <button onClick={() => setShowPreview(false)} disabled={loading}
-                        className="flex-1 bg-white border-2 border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-bold py-3 rounded-xl text-sm uppercase tracking-widest transition-colors">
+                        className="flex-1 bg-white border-2 border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-bold py-3 rounded-sm text-sm uppercase tracking-widest transition-colors">
                         Cancel
                       </button>
                       {(() => {
@@ -535,7 +546,7 @@ export default function Cart() {
                         const hasSingleOrderConflict = new Set(installmentSigs).size > 1;
                         return (
                           <button onClick={hasSingleOrderConflict ? enterSplitMode : handleCheckout} disabled={loading}
-                            className={`flex-1 font-black py-3 rounded-xl text-sm uppercase tracking-widest transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 ${hasSingleOrderConflict ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-brandLime hover:bg-white border-2 border-transparent hover:border-brandLime text-brandBlack'}`}>
+                            className={`flex-1 text-white font-black py-3 rounded-sm text-sm uppercase tracking-widest transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 ${hasSingleOrderConflict ? 'bg-amber-600 hover:bg-amber-700' : 'bg-zeal-red hover:bg-red-800'}`}>
                             {hasSingleOrderConflict ? <i className="fas fa-exclamation-triangle"></i> : <CreditCard size={18} />}
                             {loading ? 'Processing...' : hasSingleOrderConflict ? 'Resolve Conflicts' : 'Proceed to Pay'}
                           </button>

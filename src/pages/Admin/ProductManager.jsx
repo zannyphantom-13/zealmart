@@ -177,7 +177,7 @@ function ProductCard({ product, onDelete, onFeaturedToggle }) {
            style={{
              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
              padding: '9px 0', borderRadius: 10,
-             background: hovered ? '#1E1E1E' : '#eff6ff',
+             background: hovered ? 'linear-gradient(135deg,#1d4ed8,#2563eb)' : '#eff6ff',
              color: hovered ? '#fff' : '#1d4ed8',
              fontSize: 12, fontWeight: 700, textDecoration: 'none',
              border: '1.5px solid #bfdbfe',
@@ -388,7 +388,7 @@ export default function ProductManager() {
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', color: '#9ca3af' }}>
-      <i className="fas fa-circle-notch fa-spin" style={{ fontSize: 40, marginBottom: 16, color: '#e8fb1d' }} />
+      <i className="fas fa-circle-notch fa-spin" style={{ fontSize: 40, marginBottom: 16, color: '#7c3aed' }} />
       <h2 style={{ fontSize: 18, fontWeight: 800, color: '#6b7280', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Loading Products...</h2>
     </div>
   );
@@ -410,15 +410,15 @@ export default function ProductManager() {
           to="/admin/new"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: '#e8fb1d',
-            color: '#171717', textDecoration: 'none',
+            background: 'linear-gradient(135deg,#7c3aed,#6d28d9)',
+            color: '#fff', textDecoration: 'none',
             fontSize: 13, fontWeight: 800, padding: '12px 22px',
             borderRadius: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
-            boxShadow: '0 6px 20px rgba(232,251,29,0.35)',
+            boxShadow: '0 6px 20px rgba(124,58,237,0.35)',
             transition: 'all 0.2s'
           }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(232,251,29,0.45)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(232,251,29,0.35)'; }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(124,58,237,0.45)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(124,58,237,0.35)'; }}
         >
           <PlusCircle size={18} /> Add New Product
         </Link>
@@ -427,7 +427,7 @@ export default function ProductManager() {
       {/* Stats Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
         {[
-          { label: 'Total Products', value: stats.total, color: '#171717', bg: '#f3f0ff', icon: '📦' },
+          { label: 'Total Products', value: stats.total, color: '#7c3aed', bg: '#f3f0ff', icon: '📦' },
           { label: 'Featured',       value: stats.featured, color: '#d97706', bg: '#fffbeb', icon: '⭐' },
           { label: 'On Sale',        value: stats.onSale,   color: '#dc2626', bg: '#fef2f2', icon: '🏷️' },
         ].map(s => (
@@ -463,7 +463,7 @@ export default function ProductManager() {
               fontSize: 13, fontWeight: 500, color: '#111827',
               outline: 'none', background: '#f9fafb', boxSizing: 'border-box'
             }}
-            onFocus={e => { e.target.style.borderColor = '#e8fb1d'; e.target.style.background = '#fff'; }}
+            onFocus={e => { e.target.style.borderColor = '#7c3aed'; e.target.style.background = '#fff'; }}
             onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; }}
           />
         </div>
@@ -528,8 +528,8 @@ export default function ProductManager() {
               to="/admin/new"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
-                background: '#e8fb1d',
-                color: '#171717', textDecoration: 'none',
+                background: 'linear-gradient(135deg,#7c3aed,#6d28d9)',
+                color: '#fff', textDecoration: 'none',
                 fontSize: 13, fontWeight: 800, padding: '12px 24px', borderRadius: 12,
                 letterSpacing: '0.06em', textTransform: 'uppercase'
               }}

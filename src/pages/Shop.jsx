@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import Footer from '../components/Footer';
 
 const CATEGORIES = [
-    'All', 'Solar', 'Electronics', 'Automation', 'Air Conditioners', 'Televisions', 'Refrigerators', 'Generators', 'Washing Machines', 'Phones', 'Laptops', 'Audio', 'Gaming'
+    'All', 'Air Conditioners', 'Televisions', 'Refrigerators', 'Generators', 'Washing Machines', 'Phones', 'Laptops', 'Audio', 'Gaming'
 ];
 
 function pathToCategory(pathname) {
@@ -37,8 +37,14 @@ export default function Shop() {
                 
                 if (items.length === 0) {
                     items = [
-                        { id: '1', name: 'Smart Energy Meter Kit', price: 149000, category: 'Solar', img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=500&q=80', brand: 'MAYJAY' },
-                        { id: '2', name: 'Premium Solar Inverter 5kVA', price: 599000, category: 'Solar', img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=500&q=80', brand: 'MAYJAY' }
+                        { id: '1', name: 'Royal 1.5HP Split Air Conditioner', price: 285000, oldPrice: 310000, category: 'Air Conditioners', img: 'https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?w=500&q=80', tag: 'Awoof', brand: 'Royal' },
+                        { id: '2', name: 'HP Pavilion 15 (16GB RAM, 512GB SSD)', price: 450000, category: 'Laptops', img: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=500&q=80', brand: 'HP' },
+                        { id: '3', name: 'Sony PlayStation 5 Console', price: 820000, oldPrice: 850000, category: 'Gaming', img: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=500&q=80', tag: 'Fast Moving', brand: 'Sony' },
+                        { id: '4', name: 'Samsung 65" Class CU7000 Crystal UHD 4K TV', price: 650000, category: 'Televisions', img: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80', brand: 'Samsung' },
+                        { id: '5', name: 'Thermocool 3.5kVA Generator (Igwe)', price: 420000, category: 'Generators', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80', tag: 'Best Seller', brand: 'Thermocool' },
+                        { id: '6', name: 'Panasonic Top Load Washing Machine 10kg', price: 345000, category: 'Washing Machines', img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500&q=80', brand: 'Panasonic' },
+                        { id: '7', name: 'iPhone 15 Pro Max 256GB', price: 1850000, oldPrice: 2000000, category: 'Phones', img: 'https://images.unsplash.com/photo-1696446701796-da6122569f74?w=500&q=80', brand: 'Apple' },
+                        { id: '8', name: 'Hisense 205L Double Door Refrigerator', price: 215000, category: 'Refrigerators', img: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=500&q=80', brand: 'Hisense' }
                     ];
                 }
                 setProducts(items);
@@ -73,58 +79,52 @@ export default function Shop() {
     });
 
     return (
-        <div className="bg-gray-50 flex-grow min-h-screen flex flex-col">
+        <main className="bg-gray-50 flex-grow min-h-screen">
             {/* Page Header */}
-            <div className="bg-brandBlack border-b border-gray-800 shadow-xl py-8 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1000&q=80')] mix-blend-overlay bg-cover bg-center"></div>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="bg-white border-b border-gray-200 shadow-sm py-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="w-full md:w-auto">
-                            <div className="inline-flex items-center space-x-2 bg-brandLime/10 border border-brandLime/30 text-brandLime px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-3">
-                                <i className="fa-solid fa-bolt"></i> <span>Premium Catalog</span>
-                            </div>
-                            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight uppercase">
-                                {search ? `Search: ${search}` : active === 'All' ? 'ALL PRODUCTS' : active}
+                            <h1 className="text-3xl font-display font-black text-gray-900 tracking-tight uppercase border-l-4 border-zeal-red pl-3">
+                                {search ? `Search: ${search}` : active === 'All' ? 'All Appliances & Electronics' : active}
                             </h1>
-                            <p className="text-sm text-gray-400 mt-2 flex items-center font-medium">
-                                <i className="fas fa-check-circle text-brandLime mr-1.5"></i> 100% Genuine Brands • Manufacturer Warranty
+                            <p className="text-sm text-gray-500 mt-2 flex items-center font-medium">
+                                <i className="fas fa-check-circle text-green-500 mr-1"></i> 100% Genuine Brands • Manufacturer Warranty
                             </p>
                         </div>
-                        <div className="w-full md:w-96 relative group">
+                        <div className="w-full md:w-80 relative">
                             <input
                                 type="text"
-                                placeholder="Filter within catalog..."
+                                placeholder="Filter within..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className="w-full bg-brandDark text-white border border-gray-700 focus:border-brandLime focus:ring-1 focus:ring-brandLime rounded-lg py-3 pl-12 pr-4 outline-none transition-all font-medium text-sm placeholder-gray-500"
+                                className="w-full bg-white border border-gray-300 focus:border-zeal-blue rounded-sm py-2.5 pl-10 pr-4 outline-none transition-all font-medium text-sm"
                             />
-                            <i className="fas fa-search absolute left-4 top-4 text-gray-400 text-sm group-focus-within:text-brandLime transition-colors"></i>
+                            <i className="fas fa-search absolute left-3 top-3.5 text-gray-400 text-sm"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8 flex-grow">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
                 {/* Sidebar Filters */}
                 <div className="w-full md:w-64 flex-shrink-0">
-                    <div className="bg-white border border-gray-100 overflow-hidden sticky top-28 shadow-xl rounded-2xl group">
-                        <div className="bg-brandBlack text-brandLime px-5 py-4 font-black uppercase tracking-widest text-xs flex items-center justify-between border-b border-gray-800">
-                            <span>Categories</span>
-                            <i className="fas fa-layer-group text-gray-400 text-sm group-hover:text-brandLime transition-colors"></i>
+                    <div className="bg-white border border-gray-200 overflow-hidden sticky top-6">
+                        <div className="bg-zeal-dark text-white px-4 py-3 font-bold uppercase tracking-wide text-sm flex items-center justify-between">
+                            Categories
+                            <i className="fas fa-list text-gray-400 text-xs"></i>
                         </div>
-                        <ul className="divide-y divide-gray-50 bg-gray-50/50">
+                        <ul className="divide-y divide-gray-100">
                             {CATEGORIES.map(cat => (
                                 <li key={cat}>
                                     <button
                                         onClick={() => { setActive(cat); setSearch(''); }}
-                                        className={`w-full text-left px-5 py-3.5 text-sm font-bold transition-all flex items-center justify-between group/btn ${
-                                            active === cat 
-                                              ? 'text-brandBlack bg-white border-l-4 border-brandLime shadow-sm' 
-                                              : 'text-gray-500 hover:text-brandDark hover:bg-white border-l-4 border-transparent'
+                                        className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors hover:bg-gray-50 flex items-center justify-between ${
+                                            active === cat ? 'text-zeal-red bg-red-50 border-l-4 border-zeal-red font-bold' : 'text-gray-600 border-l-4 border-transparent'
                                         }`}
                                     >
-                                        <span>{cat}</span>
-                                        <i className={`fas fa-chevron-right text-[10px] transition-transform ${active === cat ? 'text-brandLime translate-x-1' : 'text-gray-300 group-hover/btn:translate-x-1'}`}></i>
+                                        {cat}
+                                        <i className="fas fa-chevron-right text-[10px] text-gray-300"></i>
                                     </button>
                                 </li>
                             ))}
@@ -134,13 +134,13 @@ export default function Shop() {
 
                 {/* Main Product Grid */}
                 <div className="flex-1">
-                    <div className="bg-white p-4 border border-gray-100 mb-6 flex justify-between items-center rounded-xl shadow-md">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                            Found <span className="text-brandDark bg-brandLime/20 px-2 py-0.5 rounded-md ml-1">{filtered.length}</span> items
+                    <div className="bg-white p-3 border border-gray-200 mb-6 flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-600">
+                            Found <span className="font-bold text-gray-900">{filtered.length}</span> items
                         </span>
-                        <div className="flex items-center text-xs font-bold uppercase tracking-wider">
-                            <span className="text-gray-400 mr-3">Sort by:</span>
-                            <select className="bg-gray-50 border border-gray-200 text-brandDark py-2 px-3 outline-none rounded-lg focus:border-brandLime transition-colors cursor-pointer">
+                        <div className="flex items-center text-sm">
+                            <span className="text-gray-500 mr-2 font-medium">Sort by:</span>
+                            <select className="bg-gray-50 border border-gray-300 text-gray-700 py-1.5 px-3 outline-none text-sm font-medium">
                                 <option>Popularity</option>
                                 <option>Price: Low to High</option>
                                 <option>Price: High to Low</option>
@@ -151,24 +151,21 @@ export default function Shop() {
                     {loading ? (
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                             {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} className="bg-white p-4 rounded-xl shadow-md border border-gray-100 h-72 animate-pulse flex flex-col justify-between">
-                                    <div className="w-full h-32 bg-gray-100 rounded-lg mb-4"></div>
+                                <div key={i} className="bg-white p-4 border border-gray-200 h-80 animate-pulse flex flex-col justify-between">
+                                    <div className="w-full h-40 bg-gray-100 mb-4"></div>
                                     <div className="h-4 bg-gray-100 w-3/4 mb-2"></div>
-                                    <div className="h-4 bg-gray-100 w-1/2 mb-auto"></div>
-                                    <div className="h-8 bg-gray-100 w-full mt-3 rounded-md"></div>
+                                    <div className="h-8 bg-gray-100 w-full mt-auto"></div>
                                 </div>
                             ))}
                         </div>
                     ) : filtered.length === 0 ? (
-                        <div className="bg-white p-16 rounded-2xl shadow-xl border border-gray-100 text-center flex flex-col items-center justify-center min-h-[400px]">
-                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 border border-gray-100">
-                                <i className="fas fa-search text-3xl text-gray-300"></i>
-                            </div>
-                            <h3 className="text-2xl font-black text-brandDark mb-2 uppercase tracking-tight">No products found</h3>
-                            <p className="text-gray-500 mb-8 font-medium text-sm max-w-sm">We couldn't find any items matching your criteria. Try adjusting your filters or search terms.</p>
+                        <div className="bg-white p-12 border border-gray-200 text-center">
+                            <i className="fas fa-search text-6xl text-gray-200 mb-4"></i>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2 uppercase">No products found</h3>
+                            <p className="text-gray-500 mb-6 font-medium">We couldn't find any items matching your criteria.</p>
                             <button 
                                 onClick={() => { setSearch(''); setActive('All'); }}
-                                className="bg-brandDark hover:bg-brandBlack text-brandLime font-black py-3 px-8 rounded-xl uppercase tracking-widest text-xs transition-all shadow-md hover:shadow-xl hover:-translate-y-0.5"
+                                className="bg-zeal-red hover:bg-red-800 text-white font-bold py-2.5 px-8 uppercase tracking-wide text-sm transition"
                             >
                                 Clear All Filters
                             </button>
@@ -176,24 +173,48 @@ export default function Shop() {
                     ) : (
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                             {filtered.map(p => (
-                                <div key={p.id} className="bg-white p-4 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col justify-between group cursor-pointer" onClick={() => navigate(`/products/${p.id}`)}>
-                                    <div className="relative overflow-hidden rounded-lg bg-gray-50 p-2 mb-2 flex items-center justify-center h-40">
-                                        <img src={p.img || p.images?.[0] || 'https://via.placeholder.com/150'} alt={p.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" />
+                                <div 
+                                    key={p.id} 
+                                    onClick={() => navigate(`/products/${p.id}`)}
+                                    className="product-card-container relative group cursor-pointer flex flex-col h-full bg-white border border-gray-200"
+                                >
+                                    {p.tag && (
+                                        <div className="absolute top-2 left-2 z-10 bg-zeal-red text-white text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-wider">
+                                            {p.tag}
+                                        </div>
+                                    )}
+                                    
+                                    <div className="relative p-4 h-52 flex items-center justify-center bg-white border-b border-gray-100">
+                                        <img src={p.img} alt={p.name} className="max-w-full max-h-full object-contain transform group-hover:scale-105 transition-transform duration-500" />
                                     </div>
-                                    <div>
-                                        <h4 className="text-xs font-bold text-gray-700 line-clamp-2 min-h-[32px]">{p.name}</h4>
-                                        <p className="text-brandGreen font-extrabold text-sm mt-1">₦{Number(p.price).toLocaleString()}</p>
-                                    </div>
-                                    <div className="mt-3 grid grid-cols-5 gap-1">
-                                        <button 
-                                            onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
-                                            className="col-span-4 bg-brandDark text-white text-[11px] py-1.5 rounded-md hover:bg-brandLime hover:text-brandBlack transition-all font-bold"
-                                        >
-                                            Add to Cart
-                                        </button>
-                                        <button className="bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-md flex items-center justify-center">
-                                            <i className="fa-regular fa-heart text-xs"></i>
-                                        </button>
+                                    
+                                    <div className="p-4 flex flex-col flex-grow">
+                                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                            {p.brand || 'Official Partner'}
+                                        </p>
+                                        <h3 className="text-[13px] font-bold text-gray-800 leading-snug line-clamp-2 mb-3 group-hover:text-zeal-blue transition-colors">
+                                            {p.name}
+                                        </h3>
+                                        
+                                        <div className="mt-auto">
+                                            <div className="mb-3">
+                                                <span className="text-xl font-display font-black text-zeal-red block">
+                                                    ₦{Number(p.price).toLocaleString()}
+                                                </span>
+                                                {p.oldPrice && (
+                                                    <span className="text-xs text-gray-400 line-through font-medium">
+                                                        ₦{Number(p.oldPrice).toLocaleString()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
+                                                className="w-full bg-white border border-zeal-blue text-zeal-blue hover:bg-zeal-blue hover:text-white font-bold py-2.5 rounded-sm text-sm transition-colors flex justify-center items-center gap-2 uppercase tracking-wide"
+                                            >
+                                                <i className="fas fa-shopping-cart"></i> Add To Cart
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -202,6 +223,6 @@ export default function Shop() {
                 </div>
             </div>
             <Footer />
-        </div>
+        </main>
     );
 }
