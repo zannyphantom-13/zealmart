@@ -189,7 +189,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Dropdown */}
             {mobileOpen && (
-                <div className="md:hidden bg-white border-b shadow-lg absolute w-full z-50">
+                <div className="md:hidden bg-white border-b shadow-lg fixed left-0 right-0 top-auto w-full z-[9999]" style={{ top: 'auto', maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
                     <div className="p-4 flex flex-col gap-4">
                         {/* User Account Section */}
                         <div className="pb-4 border-b border-gray-100">
