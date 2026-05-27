@@ -3,6 +3,7 @@ import { useSearchParams, useLocation, Link, useNavigate } from 'react-router-do
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import Footer from '../components/Footer';
+import { isProductInStock, getStockDisplayText } from '../utils/inventoryService';
 
 const CATEGORIES = [
     'All', 'Air Conditioners', 'Televisions', 'Refrigerators', 'Generators', 'Washing Machines', 'Phones', 'Laptops', 'Audio', 'Gaming'
@@ -28,24 +29,36 @@ export default function Shop() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Ensure product has inventory fields
+    const ensureInventoryFields = (product) => ({
+        ...product,
+        inventory_status: product.inventory_status || 'in_stock',
+        items_left: product.items_left !== undefined ? product.items_left : 5,
+        unlimited_stock: product.unlimited_stock || false,
+        is_hidden: product.is_hidden || false
+    });
+
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
             try {
                 const snap = await getDocs(collection(db, 'products'));
-                let items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                let items = snap.docs.map(d => ensureInventoryFields({ id: d.id, ...d.data() })).filter(p => !p.is_hidden);
                 
                 if (items.length === 0) {
                     items = [
-                        { id: '1', name: 'Royal 1.5HP Split Air Conditioner', price: 285000, oldPrice: 310000, category: 'Air Conditioners', img: 'https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?w=500&q=80', tag: 'Awoof', brand: 'Royal' },
-                        { id: '2', name: 'HP Pavilion 15 (16GB RAM, 512GB SSD)', price: 450000, category: 'Laptops', img: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=500&q=80', brand: 'HP' },
-                        { id: '3', name: 'Sony PlayStation 5 Console', price: 820000, oldPrice: 850000, category: 'Gaming', img: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=500&q=80', tag: 'Fast Moving', brand: 'Sony' },
-                        { id: '4', name: 'Samsung 65" Class CU7000 Crystal UHD 4K TV', price: 650000, category: 'Televisions', img: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80', brand: 'Samsung' },
-                        { id: '5', name: 'Thermocool 3.5kVA Generator (Igwe)', price: 420000, category: 'Generators', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80', tag: 'Best Seller', brand: 'Thermocool' },
-                        { id: '6', name: 'Panasonic Top Load Washing Machine 10kg', price: 345000, category: 'Washing Machines', img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500&q=80', brand: 'Panasonic' },
-                        { id: '7', name: 'iPhone 15 Pro Max 256GB', price: 1850000, oldPrice: 2000000, category: 'Phones', img: 'https://images.unsplash.com/photo-1696446701796-da6122569f74?w=500&q=80', brand: 'Apple' },
-                        { id: '8', name: 'Hisense 205L Double Door Refrigerator', price: 215000, category: 'Refrigerators', img: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=500&q=80', brand: 'Hisense' }
+                        { id: '1', name: 'Royal 1.5HP Split Air Conditioner', price: 285000, oldPrice: 310000, category: 'Air Conditioners', img: 'https://images.unsplash.com/photo-1667232231269-b5b50821d3f9?w=500&q=80', tag: 'Awoof', brand: 'Royal', inventory_status: 'in_stock', items_left: 8, unlimited_stock: false, is_hidden: false },
+                        { id: '2', name: 'HP Pavilion 15 (16GB RAM, 512GB SSD)', price: 450000, category: 'Laptops', img: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=500&q=80', brand: 'HP', inventory_status: 'out_of_stock', items_left: 0, unlimited_stock: false, is_hidden: false },
+                        { id: '3', name: 'Sony PlayStation 5 Console', price: 820000, oldPrice: 850000, category: 'Gaming', img: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=500&q=80', tag: 'Fast Moving', brand: 'Sony', inventory_status: 'in_stock', items_left: 0, unlimited_stock: true, is_hidden: false },
+                        { id: '4', name: 'Samsung 65" Class CU7000 Crystal UHD 4K TV', price: 650000, category: 'Televisions', img: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80', brand: 'Samsung', inventory_status: 'in_stock', items_left: 5, unlimited_stock: false, is_hidden: false },
+                        { id: '5', name: 'Thermocool 3.5kVA Generator (Igwe)', price: 420000, category: 'Generators', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80', tag: 'Best Seller', brand: 'Thermocool', inventory_status: 'in_stock', items_left: 0, unlimited_stock: true, is_hidden: false },
+                        { id: '6', name: 'Panasonic Top Load Washing Machine 10kg', price: 345000, category: 'Washing Machines', img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=500&q=80', brand: 'Panasonic', inventory_status: 'in_stock', items_left: 6, unlimited_stock: false, is_hidden: false },
+                        { id: '7', name: 'iPhone 15 Pro Max 256GB', price: 1850000, oldPrice: 2000000, category: 'Phones', img: 'https://images.unsplash.com/photo-1696446701796-da6122569f74?w=500&q=80', brand: 'Apple', inventory_status: 'in_stock', items_left: 0, unlimited_stock: true, is_hidden: false },
+                        { id: '8', name: 'Hisense 205L Double Door Refrigerator', price: 215000, category: 'Refrigerators', img: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=500&q=80', brand: 'Hisense', inventory_status: 'in_stock', items_left: 7, unlimited_stock: false, is_hidden: false }
                     ];
+                } else {
+                    // Ensure all fetched items have inventory fields
+                    items = items.map(ensureInventoryFields);
                 }
                 setProducts(items);
             } catch (error) {
@@ -188,7 +201,7 @@ export default function Shop() {
                                         <img src={p.img} alt={p.name} className="max-w-full max-h-full object-contain transform group-hover:scale-105 transition-transform duration-500" />
                                     </div>
                                     
-                                    <div className="p-4 flex flex-col flex-grow">
+                    <div className="p-4 flex flex-col flex-grow">
                                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">
                                             {p.brand || 'Official Partner'}
                                         </p>
@@ -197,6 +210,19 @@ export default function Shop() {
                                         </h3>
                                         
                                         <div className="mt-auto">
+                                            {/* Inventory Status */}
+                                            <div className="mb-2">
+                                                {isProductInStock(p) ? (
+                                                    <span className="inline-flex items-center gap-1 text-green-600 text-xs font-bold uppercase tracking-wider">
+                                                        <i className="fas fa-check-circle text-xs"></i> {getStockDisplayText(p)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 text-red-600 text-xs font-bold uppercase tracking-wider">
+                                                        <i className="fas fa-exclamation-circle text-xs"></i> {getStockDisplayText(p)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            
                                             <div className="mb-3">
                                                 <span className="text-xl font-display font-black text-zeal-red block">
                                                     ₦{Number(p.price).toLocaleString()}
@@ -210,9 +236,10 @@ export default function Shop() {
                                             
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); navigate(`/products/${p.id}`); }}
-                                                className="w-full bg-white border border-zeal-blue text-zeal-blue hover:bg-zeal-blue hover:text-white font-bold py-2.5 rounded-sm text-sm transition-colors flex justify-center items-center gap-2 uppercase tracking-wide"
+                                                disabled={!isProductInStock(p)}
+                                                className={`w-full ${isProductInStock(p) ? 'bg-white border-zeal-blue text-zeal-blue hover:bg-zeal-blue hover:text-white' : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'} border font-bold py-2.5 rounded-sm text-sm transition-colors flex justify-center items-center gap-2 uppercase tracking-wide`}
                                             >
-                                                <i className="fas fa-shopping-cart"></i> Add To Cart
+                                                <i className="fas fa-shopping-cart"></i> {isProductInStock(p) ? 'Add To Cart' : 'Out of Stock'}
                                             </button>
                                         </div>
                                     </div>

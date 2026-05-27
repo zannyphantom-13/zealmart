@@ -8,6 +8,12 @@ import useAuthStore from '../store/useAuthStore';
 import Footer from '../components/Footer';
 import toast from 'react-hot-toast';
 import { checkCartAccess } from '../utils/rbac';
+import { initializeOrderTracking } from '../utils/orderTrackingService';
+import { decreaseInventory } from '../utils/inventoryService';
+import {
+  createOrderPlacedNotification,
+  createPaymentSuccessNotification
+} from '../utils/notificationService';
 
 function fmt(n) {
   return '₦' + Math.ceil(n).toLocaleString('en-NG');
@@ -121,6 +127,24 @@ export default function Cart() {
 
   const totalToPayNow = getInitialPaymentTotal();
 
+  const loadKorapayScript = () => new Promise((resolve, reject) => {
+    if (window.Korapay) { resolve(); return; }
+
+    // Remove any previously-failed script tag so we can inject a fresh one
+    const existing = document.querySelector('script[data-korapay]');
+    if (existing) existing.remove();
+
+    const s = document.createElement('script');
+    s.src = 'https://korablobstorage.blob.core.windows.net/modal-bucket/korapay-collections.min.js';
+    s.setAttribute('data-korapay', 'true');
+    s.onload = () => resolve();
+    s.onerror = () => {
+      s.remove(); // clean up so the next attempt starts fresh too
+      reject(new Error('Korapay script failed to load'));
+    };
+    document.head.appendChild(s);
+  });
+
   const handleCheckout = async () => {
     if (!user) {
       navigate('/login');
@@ -132,51 +156,127 @@ export default function Cart() {
     setError('');
 
     try {
-      if (splitMode) {
-        const groups = buildGroupMap(expandedItems);
-        for (const [gId, groupUnits] of Object.entries(groups)) {
-          if (groupUnits.length === 0) continue;
-          const merged = {};
-          groupUnits.forEach(unit => {
-            if (!merged[unit.cartItemId]) merged[unit.cartItemId] = { ...unit, quantity: 0 };
-            merged[unit.cartItemId].quantity += 1;
-          });
-          const groupItems = Object.values(merged);
-          const groupTotalAmount = groupItems.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.price * (1 + (i.installments === 3 || i.installments === 4 ? 0.1 : i.installments > 4 ? 0.2 : 0))) * i.quantity), 0);
-          const groupTotalToPayNow = groupItems.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.periodPayment || i.monthlyPayment || 0) * i.quantity), 0);
-
-          await addDoc(collection(db, "orders"), {
-            userId: user.uid,
-            items: groupItems,
-            deliveryInfo: deliveryInfo,
-            totalAmount: groupTotalAmount,
-            amountPaid: groupTotalToPayNow,
-            status: 'Processing',
-            paymentRef: `MOCK_REF_${Date.now()}_G${gId}`,
-            createdAt: new Date(),
-          });
-        }
-      } else {
-        await addDoc(collection(db, "orders"), {
-          userId: user.uid,
-          items: items,
-          deliveryInfo: deliveryInfo,
-          totalAmount: items.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.price * (1 + (i.installments === 3 || i.installments === 4 ? 0.1 : i.installments > 4 ? 0.2 : 0))) * i.quantity), 0),
-          amountPaid: totalToPayNow,
-          status: 'Processing',
-          paymentRef: `MOCK_REF_${Date.now()}`,
-          createdAt: new Date(),
-        });
+      const koraKey = import.meta.env.VITE_KORA_PUBLIC_KEY;
+      if (!koraKey) {
+        toast.error('Payment key is missing. Please contact support.');
+        setLoading(false);
+        return;
       }
 
-      clearCart();
-      toast.success('Order placed successfully!');
-      setShowPreview(false);
-      navigate('/profile');
+      // Ensure Korapay script is loaded (handles race-condition on first load)
+      try {
+        await loadKorapayScript();
+      } catch {
+        toast.error('Could not load payment gateway. Check your connection and try again.');
+        setLoading(false);
+        return;
+      }
+
+      if (!window.Korapay) {
+        toast.error('Payment gateway failed to initialise. Please refresh and try again.');
+        setLoading(false);
+        return;
+      }
+
+      window.Korapay.initialize({
+        key: koraKey,
+        reference: `ZEAL_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        amount: totalToPayNow,
+        currency: "NGN",
+        customer: {
+            name: user.displayName || user.email.split('@')[0],
+            email: user.email
+        },
+        onSuccess: async function(response) {
+            toast.success("Payment verified! Processing order...");
+            try {
+              if (splitMode) {
+                const groups = buildGroupMap(expandedItems);
+                for (const [gId, groupUnits] of Object.entries(groups)) {
+                  if (groupUnits.length === 0) continue;
+                  const merged = {};
+                  groupUnits.forEach(unit => {
+                    if (!merged[unit.cartItemId]) merged[unit.cartItemId] = { ...unit, quantity: 0 };
+                    merged[unit.cartItemId].quantity += 1;
+                  });
+                  const groupItems = Object.values(merged);
+                  const groupTotalAmount = groupItems.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.price * (1 + (i.installments === 3 || i.installments === 4 ? 0.1 : i.installments > 4 ? 0.2 : 0))) * i.quantity), 0);
+                  const groupTotalToPayNow = groupItems.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.periodPayment || i.monthlyPayment || 0) * i.quantity), 0);
+
+                  for (const item of groupItems) {
+                    try {
+                      await decreaseInventory(item.id, Number(item.quantity));
+                    } catch (inventoryErr) {
+                      console.error('Error updating inventory for item:', item.id, inventoryErr);
+                    }
+                  }
+
+                  const orderRef = await addDoc(collection(db, "orders"), initializeOrderTracking({
+                    userId: user.uid,
+                    items: groupItems,
+                    deliveryInfo: deliveryInfo,
+                    totalAmount: groupTotalAmount,
+                    amountPaid: groupTotalToPayNow,
+                    status: 'Processing',
+                    paymentRef: response.reference || `REF_${Date.now()}_G${gId}`,
+                    createdAt: new Date(),
+                  }));
+
+                  try {
+                    await createOrderPlacedNotification(user.uid, orderRef.id, groupItems.length);
+                    await createPaymentSuccessNotification(user.uid, orderRef.id, groupTotalToPayNow);
+                  } catch (notifErr) {
+                    console.error('Error creating notifications:', notifErr);
+                  }
+                }
+              } else {
+                for (const item of items) {
+                  try {
+                    await decreaseInventory(item.id, Number(item.quantity));
+                  } catch (inventoryErr) {
+                    console.error('Error updating inventory for item:', item.id, inventoryErr);
+                  }
+                }
+
+                const orderTotalAmount = items.reduce((acc, i) => acc + (i.paymentChoice === 'full' ? i.price * i.quantity : (i.price * (1 + (i.installments === 3 || i.installments === 4 ? 0.1 : i.installments > 4 ? 0.2 : 0))) * i.quantity), 0);
+                const orderRef = await addDoc(collection(db, "orders"), initializeOrderTracking({
+                  userId: user.uid,
+                  items: items,
+                  deliveryInfo: deliveryInfo,
+                  totalAmount: orderTotalAmount,
+                  amountPaid: totalToPayNow,
+                  status: 'Processing',
+                  paymentRef: response.reference || `REF_${Date.now()}`,
+                  createdAt: new Date(),
+                }));
+
+                try {
+                  await createOrderPlacedNotification(user.uid, orderRef.id, items.length);
+                  await createPaymentSuccessNotification(user.uid, orderRef.id, totalToPayNow);
+                } catch (notifErr) {
+                  console.error('Error creating notifications:', notifErr);
+                }
+              }
+
+              clearCart();
+              toast.success('Order placed successfully!');
+              setShowPreview(false);
+              setLoading(false);
+              navigate('/profile');
+            } catch (err) {
+              console.error("Error saving order:", err);
+              setError("Payment successful but failed to save order. Please contact support.");
+              setLoading(false);
+            }
+        },
+        onClose: function() {
+            setLoading(false);
+            toast.error("Payment was cancelled.");
+        }
+      });
     } catch (err) {
-      console.error("Error saving order:", err);
-      setError("Payment successful but failed to save order. Please contact support.");
-    } finally {
+      console.error("Error initializing payment:", err);
+      setError("Failed to initialize payment gateway.");
       setLoading(false);
     }
   };
@@ -281,13 +381,16 @@ export default function Cart() {
               
               <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3">Delivery Information</h2>
               <div className="flex flex-col gap-3 mb-8">
-                <input type="text" placeholder="Full Address" value={deliveryInfo.address} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                <input id="delivery-address" name="address" type="text" autoComplete="street-address" placeholder="Full Address" value={deliveryInfo.address} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
                 <div className="flex gap-3">
-                  <input type="text" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
-                  <input type="text" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                  <input id="delivery-city" name="city" type="text" autoComplete="address-level2" placeholder="City" value={deliveryInfo.city} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                  <input id="delivery-state" name="state" type="text" autoComplete="address-level1" placeholder="State" value={deliveryInfo.state} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, state: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
                 </div>
-                <input type="tel" placeholder="Phone Number" value={deliveryInfo.phone} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
-                <textarea placeholder="Additional Instructions (Optional)" value={deliveryInfo.instructions} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, instructions: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors resize-y min-h-[80px]"></textarea>
+                <div>
+                  <input id="delivery-phone" name="phone" type="tel" autoComplete="tel" placeholder="WhatsApp Number (e.g. +234...)" value={deliveryInfo.phone} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors" />
+                  <span className="text-[10px] font-bold text-gray-500 mt-1 block uppercase tracking-wider">Required for WhatsApp delivery updates. Please include country code (+234).</span>
+                </div>
+                <textarea id="delivery-instructions" name="instructions" autoComplete="off" placeholder="Additional Instructions (Optional)" value={deliveryInfo.instructions} onChange={(e) => setDeliveryInfo({ ...deliveryInfo, instructions: e.target.value })} className="w-full bg-gray-50 border border-gray-200 text-sm font-medium rounded-sm px-4 py-2.5 outline-none focus:border-zeal-blue transition-colors resize-y min-h-[80px]"></textarea>
               </div>
 
               <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3">Order Summary</h2>
@@ -510,9 +613,9 @@ export default function Cart() {
                       {items.map(item => (
                         <div key={item.cartItemId} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                           <div className="flex items-center gap-3 min-w-0 pr-4">
-                            <span className="font-black text-sm text-gray-400">{item.quantity}×</span>
+                            <span className="font-black text-sm text-gray-400 flex-shrink-0">{item.quantity}×</span>
                             <span className="font-bold text-sm text-gray-800 truncate">{item.name}</span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded-sm">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded-sm flex-shrink-0 whitespace-nowrap">
                               {item.paymentChoice === 'full' ? 'Full' : `${item.installments} ${item.paymentFrequency === 'weekly' ? 'Wks' : 'Mos'}`}
                             </span>
                           </div>

@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import useAuthStore from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
+import NotificationBell from './NotificationBell';
 import toast from 'react-hot-toast';
 
 export default function Navbar() {
@@ -41,7 +42,7 @@ export default function Navbar() {
     };
 
     return (
-        <header className="bg-white">
+        <header className="bg-white relative z-50">
             {/* Animated Ticker Tape */}
             <div className="bg-zeal-red text-white py-1 overflow-hidden whitespace-nowrap relative flex items-center">
                 <div className="animate-marquee inline-block font-bold text-xs uppercase tracking-widest whitespace-nowrap">
@@ -91,6 +92,9 @@ export default function Navbar() {
 
                     {/* Actions - Desktop */}
                     <div className="hidden md:flex items-center gap-6">
+                        {user && (
+                            <NotificationBell userId={user.uid} />
+                        )}
                         {user ? (
                             <div className="flex items-center gap-4">
                                 <Link to="/profile" className="flex items-center gap-2 text-gray-700 hover:text-zeal-red transition group">
@@ -119,6 +123,7 @@ export default function Navbar() {
                             </Link>
                         )}
 
+                        {!isAdmin && (
                         <Link to="/cart" className="flex items-center gap-2 text-gray-700 hover:text-zeal-red transition group">
                             <div className="relative">
                                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 group-hover:border-zeal-red transition-all duration-300 group-hover:-translate-y-1">
@@ -133,16 +138,23 @@ export default function Navbar() {
                                 <span className="text-sm font-bold">₦0.00</span>
                             </div>
                         </Link>
+                        )}
+
                     </div>
 
                     {/* Mobile Toggles */}
                     <div className="flex md:hidden items-center gap-4">
+                        {user && !isAdmin && (
+                            <NotificationBell userId={user.uid} isMobile={true} />
+                        )}
+                        {!isAdmin && (
                         <Link to="/cart" className="relative text-gray-800">
                             <i className="fas fa-shopping-cart text-2xl"></i>
                             <span className="absolute -top-2 -right-2 bg-zeal-red text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
                                 {getTotalItems()}
                             </span>
                         </Link>
+                        )}
                         <button onClick={() => setMobileOpen(!mobileOpen)} className="text-gray-800 text-2xl">
                             <i className={`fas ${mobileOpen ? 'fa-times' : 'fa-bars'}`}></i>
                         </button>
@@ -189,7 +201,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Dropdown */}
             {mobileOpen && (
-                <div className="md:hidden bg-white border-b shadow-lg fixed left-0 right-0 top-auto w-full z-[9999]" style={{ top: 'auto', maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
+                <div className="md:hidden bg-white border-b shadow-lg absolute left-0 right-0 top-full w-full z-[9999]" style={{ maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' }}>
                     <div className="p-4 flex flex-col gap-4">
                         {/* User Account Section */}
                         <div className="pb-4 border-b border-gray-100">
@@ -231,6 +243,7 @@ export default function Navbar() {
                         </div>
 
                         {/* Cart Section */}
+                        {!isAdmin && (
                         <Link to="/cart" className="flex items-center gap-3 border-b border-gray-100 pb-4" onClick={() => setMobileOpen(false)}>
                             <div className="relative">
                                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
@@ -245,6 +258,7 @@ export default function Navbar() {
                                 <span className="text-sm font-bold">₦0.00</span>
                             </div>
                         </Link>
+                        )}
                     </div>
                 </div>
             )}

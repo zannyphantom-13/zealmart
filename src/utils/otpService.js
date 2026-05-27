@@ -23,7 +23,7 @@ export const generateOTP = () => {
  * @returns {string} Hashed OTP
  */
 export const hashOTP = (otp) => {
-  return Buffer.from(otp).toString('base64');
+  return btoa(otp);
 };
 
 /**

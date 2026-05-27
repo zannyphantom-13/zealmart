@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import toast from 'react-hot-toast';
-import { Save, Plus, Trash2, Settings as SettingsIcon, LayoutTemplate, MessageSquare } from 'lucide-react';
+import { Save, Plus, Trash2, Settings as SettingsIcon, LayoutTemplate, MessageSquare, Upload } from 'lucide-react';
+import { uploadImage } from '../../utils/uploadImage';
 
 export default function SiteSettings() {
     const [loading, setLoading] = useState(true);
@@ -82,6 +83,19 @@ export default function SiteSettings() {
         setHeroSlides(newArr);
     };
     const removeSlide = (idx) => setHeroSlides(heroSlides.filter((_, i) => i !== idx));
+
+    const handleImageUpload = async (idx, file) => {
+        if (!file) return;
+        const uploadToast = toast.loading('Uploading image...');
+        try {
+            const url = await uploadImage(file);
+            updateSlide(idx, 'image', url);
+            toast.success('Image uploaded successfully!', { id: uploadToast });
+        } catch (error) {
+            console.error("Upload failed:", error);
+            toast.error('Failed to upload image.', { id: uploadToast });
+        }
+    };
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
@@ -186,14 +200,25 @@ export default function SiteSettings() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Image URL</label>
-                                            <input 
-                                                type="text" 
-                                                value={slide.image} 
-                                                onChange={(e) => updateSlide(idx, 'image', e.target.value)} 
-                                                className="w-full bg-white border border-gray-200 rounded-sm px-3 py-2.5 text-sm font-medium focus:border-zeal-blue outline-none transition-colors"
-                                                placeholder="https://..."
-                                            />
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Image (URL or File Upload)</label>
+                                            <div className="flex gap-2">
+                                                <input 
+                                                    type="text" 
+                                                    value={slide.image} 
+                                                    onChange={(e) => updateSlide(idx, 'image', e.target.value)} 
+                                                    className="w-full bg-white border border-gray-200 rounded-sm px-3 py-2.5 text-sm font-medium focus:border-zeal-blue outline-none transition-colors"
+                                                    placeholder="https://..."
+                                                />
+                                                <label className="bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 px-3 py-2.5 rounded-sm cursor-pointer transition-colors flex items-center justify-center shrink-0" title="Upload Image">
+                                                    <Upload size={16} />
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/*" 
+                                                        className="hidden" 
+                                                        onChange={(e) => handleImageUpload(idx, e.target.files[0])}
+                                                    />
+                                                </label>
+                                            </div>
                                         </div>
                                         <div className="md:col-span-2">
                                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Subtitle</label>

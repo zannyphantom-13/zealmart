@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, query, orderBy, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { Package, CheckCircle, Clock, Bell, Users, AlertCircle, Search, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
+import { Package, CheckCircle, Clock, Bell, Users, AlertCircle, Search, ChevronDown, ChevronUp, SlidersHorizontal, Truck, Link as LinkIcon, Copy } from 'lucide-react';
+import { shipOrder } from '../../utils/orderTrackingService';
 
 function fmt(n) {
   return '₦' + Math.ceil(n).toLocaleString('en-NG');
@@ -75,6 +76,21 @@ export default function AdminOrders() {
     } catch (err) {
       console.error(err);
       alert("Failed to update payment amount");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleShipOrder = async (orderId, customerEmail) => {
+    if (!window.confirm("Are you sure you want to mark this order as Shipped? This will generate a rider token and start the delivery timer.")) return;
+    setUpdating(true);
+    try {
+      const { tracking_status, delivery_token } = await shipOrder(orderId, customerEmail);
+      setOrders(orders.map(o => o.id === orderId ? { ...o, tracking_status, delivery_token } : o));
+      alert("Order marked as Shipped! Rider token generated.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to ship order: " + err.message);
     } finally {
       setUpdating(false);
     }
@@ -289,10 +305,18 @@ export default function AdminOrders() {
                   <div className="flex items-center gap-4 min-w-[150px] justify-end flex-grow">
                     <div className="flex flex-col items-end gap-1.5">
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</span>
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-bold uppercase tracking-wider ${order.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                        {order.status === 'Completed' ? <CheckCircle size={12} /> : <Clock size={12} />}
-                        {order.status}
-                      </span>
+                      <div className="flex gap-2">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-bold uppercase tracking-wider ${order.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                          {order.status === 'Completed' ? <CheckCircle size={12} /> : <Clock size={12} />}
+                          {order.status}
+                        </span>
+                        {order.tracking_status && order.tracking_status !== 'Pending' && (
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-bold uppercase tracking-wider ${order.tracking_status === 'Delivered' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                            <Truck size={12} />
+                            {order.tracking_status}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="bg-white p-1.5 rounded border border-gray-200 text-gray-500 shadow-sm">
                       {expandedOrders.has(order.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -403,8 +427,43 @@ export default function AdminOrders() {
                       </div>
 
                       {order.amountPaid >= order.totalAmount && (
-                        <div className="bg-green-50 text-green-700 border border-green-200 px-4 py-3 rounded-sm text-xs font-bold flex items-center justify-center gap-2 uppercase tracking-wider">
-                          <CheckCircle size={16} className="text-green-500" /> Payment Complete
+                        <div className="bg-green-50 text-green-700 border border-green-200 px-4 py-3 rounded-sm text-xs font-bold flex flex-col items-center justify-center gap-2 uppercase tracking-wider mb-4">
+                          <div className="flex items-center gap-2"><CheckCircle size={16} className="text-green-500" /> Payment Complete</div>
+                          
+                          {(!order.tracking_status || order.tracking_status === 'Pending') && (
+                            <button 
+                              onClick={() => handleShipOrder(order.id, customer?.email || order.userId)}
+                              disabled={updating}
+                              className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-sm transition-colors flex justify-center items-center gap-2"
+                            >
+                              <Truck size={14} /> Mark as Shipped
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {order.tracking_status === 'Shipped' && order.delivery_token && (
+                        <div className="bg-blue-50 border border-blue-200 p-3 rounded-sm mt-4">
+                          <div className="text-[10px] font-bold text-blue-800 uppercase tracking-widest mb-1 flex items-center gap-1"><LinkIcon size={12}/> Rider Delivery Link</div>
+                          <div className="flex items-center gap-2 bg-white border border-blue-100 p-2 rounded-sm">
+                            <input 
+                              type="text" 
+                              readOnly 
+                              value={`${window.location.origin}/delivery?order=${order.id}&token=${order.delivery_token}`}
+                              className="text-xs text-gray-600 w-full outline-none bg-transparent"
+                            />
+                            <button 
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/delivery?order=${order.id}&token=${order.delivery_token}`);
+                                alert('Link copied to clipboard!');
+                              }}
+                              className="text-blue-600 hover:text-blue-800 p-1"
+                              title="Copy Link"
+                            >
+                              <Copy size={14} />
+                            </button>
+                          </div>
+                          <div className="text-[10px] text-blue-600 mt-1 font-medium">Share this link securely with the delivery rider.</div>
                         </div>
                       )}
 

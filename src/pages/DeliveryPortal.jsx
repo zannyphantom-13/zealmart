@@ -66,7 +66,7 @@ export default function DeliveryPortal() {
 
       await verifyDeliveryOTP(orderId, otp);
       setOtpVerified(true);
-      toast.success('OTP verified! Now upload proof of delivery.');
+      toast.success('OTP verified! Now upload proof of delivery (optional).');
     } catch (err) {
       setError(err.message || 'Failed to verify OTP');
       toast.error('Invalid OTP');
@@ -100,13 +100,11 @@ export default function DeliveryPortal() {
     setLoading(true);
 
     try {
-      if (!proofImage) {
-        throw new Error('Please upload a proof of delivery image');
+      let imageUrl = null;
+      if (proofImage) {
+        toast.loading('Uploading proof of delivery...');
+        imageUrl = await uploadProofOfDeliveryImage(proofImage, orderId);
       }
-
-      // Upload image
-      toast.loading('Uploading proof of delivery...');
-      const imageUrl = await uploadProofOfDeliveryImage(proofImage, orderId);
 
       // Confirm delivery
       await confirmDelivery(orderId, imageUrl, 'rider_' + Date.now());
@@ -118,6 +116,7 @@ export default function DeliveryPortal() {
       setPreviewUrl('');
       setOtp('');
       setOtpVerified(false);
+      setOrder(prev => ({ ...prev, tracking_status: 'Delivered' }));
     } catch (err) {
       setError(err.message || 'Failed to confirm delivery');
       toast.error('Error confirming delivery');
@@ -128,11 +127,13 @@ export default function DeliveryPortal() {
 
   if (error && !order) {
     return (
-      <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <a href="/" className="text-blue-600 hover:underline">Return to home</a>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full text-center border-t-4 border-red-500">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl">
+            <i className="fas fa-times"></i>
+          </div>
+          <h1 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-wide">Link Error</h1>
+          <p className="text-sm font-medium text-gray-500 mb-6 leading-relaxed">{error}</p>
         </div>
       </div>
     );
@@ -140,108 +141,178 @@ export default function DeliveryPortal() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading delivery details...</p>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <i className="fas fa-circle-notch fa-spin text-4xl text-zeal-blue mb-4"></i>
+        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Loading Delivery Details...</p>
+      </div>
+    );
+  }
+
+  if (order.tracking_status === 'Delivered') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full text-center border-t-4 border-green-500">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500 text-4xl shadow-inner">
+            <i className="fas fa-check"></i>
+          </div>
+          <h1 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-wide">Delivered</h1>
+          <p className="text-sm font-medium text-gray-500 mb-6">This order has already been successfully delivered.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold mb-6 text-center">Delivery Verification</h1>
-
-        {/* Order Summary */}
-        <div className="bg-blue-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-gray-600"><strong>Order ID:</strong> {orderId}</p>
-          <p className="text-sm text-gray-600"><strong>Amount:</strong> ₦{order.total?.toLocaleString()}</p>
-          <p className="text-sm text-gray-600"><strong>Status:</strong> {order.tracking_status}</p>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 font-sans">
+      <div className="max-w-md mx-auto">
+        
+        {/* Branding Header */}
+        <div className="text-center mb-8">
+          <div className="font-display text-3xl font-black tracking-tighter mb-2">
+            <span className="text-zeal-blue">ZEAL</span><span className="text-zeal-red">MART</span>
+          </div>
+          <h1 className="text-sm font-black text-gray-400 uppercase tracking-widest">Rider Portal</h1>
         </div>
 
-        {!otpVerified ? (
-          <form onSubmit={handleOtpSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Enter OTP
-              </label>
-              <input
-                type="text"
-                maxLength="6"
-                placeholder="000000"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-center text-2xl tracking-widest focus:outline-none focus:border-blue-500"
-              />
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                Sent to customer via SMS/Email
-              </p>
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+          
+          {/* Order Summary Card */}
+          <div className="bg-zeal-dark text-white p-6 relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 opacity-10">
+              <i className="fas fa-box text-9xl"></i>
             </div>
-
-            {error && <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{error}</div>}
-
-            <button
-              type="submit"
-              disabled={loading || otp.length !== 6}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition"
-            >
-              {loading ? 'Verifying...' : 'Verify OTP'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleDeliveryConfirm} className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-green-700 text-sm">✓ OTP verified successfully</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Proof of Delivery
-              </label>
-              <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 transition">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
-                <div className="text-gray-600">
-                  <p className="font-medium">Click to upload image</p>
-                  <p className="text-xs text-gray-500">or drag and drop</p>
-                  <p className="text-xs text-gray-500 mt-1">PNG, JPG, WebP up to 5MB</p>
-                </div>
-              </label>
-            </div>
-
-            {previewUrl && (
-              <div className="relative">
-                <img src={previewUrl} alt="Preview" className="w-full h-40 object-cover rounded-lg" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProofImage(null);
-                    setPreviewUrl('');
-                  }}
-                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700"
-                >
-                  ✕
-                </button>
+            <div className="relative z-10">
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Order ID</div>
+              <div className="font-mono text-sm font-bold bg-white/10 inline-block px-2 py-1 rounded mb-4">#{orderId.slice(0, 12)}</div>
+              
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Customer Address</div>
+              <div className="text-sm font-medium leading-snug mb-4">
+                {order.deliveryInfo?.address}, {order.deliveryInfo?.city}
               </div>
+
+              <div className="flex justify-between items-end border-t border-white/10 pt-4 mt-2">
+                <div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</div>
+                  <div className="text-sm font-bold flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span> {order.tracking_status}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Amount Paid</div>
+                  <div className="font-display text-lg font-black text-green-400">₦{(order.amountPaid || 0).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {!otpVerified ? (
+              <form onSubmit={handleOtpSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 text-center">
+                    Enter Customer OTP
+                  </label>
+                  <input
+                    type="text"
+                    maxLength="6"
+                    placeholder="• • • • • •"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl text-center text-3xl font-black tracking-[0.5em] focus:outline-none focus:border-zeal-blue focus:bg-white transition-colors shadow-inner"
+                  />
+                  <p className="text-[10px] font-bold text-gray-400 mt-3 text-center uppercase tracking-wider">
+                    <i className="fas fa-lock mr-1"></i> Ask the customer for their 6-digit code
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2">
+                    <i className="fas fa-exclamation-circle text-red-500 text-base"></i> {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading || otp.length !== 6}
+                  className="w-full bg-zeal-blue hover:bg-blue-900 disabled:opacity-50 text-white font-black py-4 rounded-xl transition-all shadow-lg hover:shadow-xl text-sm uppercase tracking-widest flex justify-center items-center gap-2"
+                >
+                  {loading ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-shield-check"></i>}
+                  {loading ? 'Verifying...' : 'Verify OTP'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleDeliveryConfirm} className="space-y-6">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-500 shrink-0">
+                    <i className="fas fa-check text-xl"></i>
+                  </div>
+                  <div>
+                    <div className="text-sm font-black text-green-800 uppercase tracking-wide">OTP Verified</div>
+                    <div className="text-[10px] font-bold text-green-600 uppercase tracking-wider">Identity confirmed</div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">
+                    Upload Proof of Delivery <span className="text-gray-300 font-medium">(Optional)</span>
+                  </label>
+                  
+                  {!previewUrl ? (
+                    <label className="block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-zeal-blue hover:bg-blue-50 transition-colors group">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mx-auto mb-3 group-hover:bg-blue-100 group-hover:text-zeal-blue transition-colors">
+                        <i className="fas fa-camera text-xl"></i>
+                      </div>
+                      <div className="text-gray-600 font-bold text-sm mb-1">Take a photo or upload</div>
+                      <div className="text-xs font-medium text-gray-400">Capture the package at the door</div>
+                    </label>
+                  ) : (
+                    <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50">
+                      <img src={previewUrl} alt="Preview" className="w-full h-48 object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProofImage(null);
+                          setPreviewUrl('');
+                        }}
+                        className="absolute top-3 right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm shadow-lg hover:bg-red-600 transition-colors"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                      <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                        Proof Attached
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2">
+                    <i className="fas fa-exclamation-circle text-red-500 text-base"></i> {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-black py-4 rounded-xl transition-all shadow-lg hover:shadow-xl text-sm uppercase tracking-widest flex justify-center items-center gap-2"
+                >
+                  {loading ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-check-double"></i>}
+                  {loading ? 'Confirming...' : 'Complete Delivery'}
+                </button>
+              </form>
             )}
+          </div>
+        </div>
 
-            {error && <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{error}</div>}
-
-            <button
-              type="submit"
-              disabled={loading || !proofImage}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition"
-            >
-              {loading ? 'Confirming...' : 'Confirm Delivery'}
-            </button>
-          </form>
-        )}
+        <div className="mt-8 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          <i className="fas fa-shield-alt mr-1"></i> Secured by ZealMart Delivery System
+        </div>
       </div>
     </div>
   );

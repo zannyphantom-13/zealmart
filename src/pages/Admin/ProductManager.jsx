@@ -4,7 +4,7 @@ import { db } from '../../firebase';
 import { Link } from 'react-router-dom';
 import {
   Edit, Trash2, PlusCircle, Package, Star, Search,
-  SlidersHorizontal, Ruler, BadgePercent, ArrowUpDown
+  SlidersHorizontal, Ruler, BadgePercent, ArrowUpDown, Eye, EyeOff
 } from 'lucide-react';
 
 const CATEGORY_STYLES = {
@@ -36,7 +36,7 @@ function CategoryBadge({ category }) {
   );
 }
 
-function ProductCard({ product, onDelete, onFeaturedToggle }) {
+function ProductCard({ product, onDelete, onFeaturedToggle, onHiddenToggle }) {
   const [hovered, setHovered] = useState(false);
   const catStyle = CATEGORY_STYLES[product.category] || defaultCat;
   const hasSale = product.pss && Number(product.pss) > 0 && Number(product.pss) < Number(product.price);
@@ -89,6 +89,28 @@ function ProductCard({ product, onDelete, onFeaturedToggle }) {
           -{discount}% OFF
         </div>
       )}
+
+      {/* Hidden / Out of Stock Badges */}
+      <div style={{ position: 'absolute', bottom: 12, left: 12, zIndex: 2, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {product.is_hidden && (
+          <div style={{
+            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+            color: '#fff', fontSize: 9, fontWeight: 800,
+            padding: '4px 8px', borderRadius: 6, letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 4
+          }}>
+            <EyeOff size={10} /> HIDDEN
+          </div>
+        )}
+        {product.inventory_status === 'out_of_stock' && (
+          <div style={{
+            background: 'rgba(220,38,38,0.9)', backdropFilter: 'blur(4px)',
+            color: '#fff', fontSize: 9, fontWeight: 800,
+            padding: '4px 8px', borderRadius: 6, letterSpacing: '0.05em'
+          }}>
+            OUT OF STOCK
+          </div>
+        )}
+      </div>
 
       {/* Image */}
       <div style={{
@@ -227,6 +249,22 @@ function ProductCard({ product, onDelete, onFeaturedToggle }) {
            )}
          </button>
          <button
+           onClick={() => onHiddenToggle(product.id, product.is_hidden)}
+           style={{
+             display: 'flex', alignItems: 'center', justifyContent: 'center',
+             width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+             background: product.is_hidden ? '#fef2f2' : '#fff',
+             color: product.is_hidden ? '#dc2626' : '#6b7280',
+             border: `1.5px solid ${product.is_hidden ? '#fecaca' : '#e5e7eb'}`,
+             cursor: 'pointer', transition: 'all 0.2s',
+           }}
+           title={product.is_hidden ? "Unhide Product" : "Hide Product"}
+           onMouseEnter={e => { e.currentTarget.style.borderColor = '#9ca3af'; }}
+           onMouseLeave={e => { e.currentTarget.style.borderColor = product.is_hidden ? '#fecaca' : '#e5e7eb'; }}
+         >
+           {product.is_hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+         </button>
+         <button
            onClick={() => onDelete(product.id)}
            style={{
              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -303,6 +341,16 @@ export default function ProductManager() {
      } catch (error) {
        console.error('Error updating product:', error);
        alert('Failed to update product. Please try again.');
+     }
+   };
+
+   const handleHiddenToggle = async (productId, currentStatus) => {
+     try {
+       await updateDoc(doc(db, 'products', productId), { is_hidden: !currentStatus });
+       setProducts(prev => prev.map(p => p.id === productId ? {...p, is_hidden: !currentStatus} : p));
+     } catch (error) {
+       console.error('Error toggling visibility:', error);
+       alert('Failed to toggle product visibility.');
      }
    };
 
@@ -425,7 +473,7 @@ export default function ProductManager() {
       </div>
 
       {/* Stats Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
         {[
           { label: 'Total Products', value: stats.total, color: '#7c3aed', bg: '#f3f0ff', icon: '📦' },
           { label: 'Featured',       value: stats.featured, color: '#d97706', bg: '#fffbeb', icon: '⭐' },
@@ -549,7 +597,7 @@ export default function ProductManager() {
             gap: 20
           }}>
        {filtered.map(product => (
-         <ProductCard key={product.id} product={product} onDelete={handleDelete} onFeaturedToggle={handleFeaturedToggle} />
+         <ProductCard key={product.id} product={product} onDelete={handleDelete} onFeaturedToggle={handleFeaturedToggle} onHiddenToggle={handleHiddenToggle} />
        ))}
           </div>
         </>
